@@ -78,14 +78,14 @@ public class ShortBinarySearch {
     public static int branchlessUnsignedBinarySearch(final short[] array, final short k) {
         int ikey = toIntUnsigned(k);
         int n = array.length;
+        final int oldn = array.length;
         int pos = 0;
         while(n>1) {
             int half = n >>> 1;
-            if(toIntUnsigned(array[pos + half]) < ikey ) pos = pos + half;
-//            pos = (toIntUnsigned(array[pos + half]) < ikey ) ? pos + half: pos;
+            pos = ((pos + half < oldn)&& (toIntUnsigned(array[pos + half]) < ikey )) ? pos + half: pos;
             n -= half;
         }
-        return pos + ((pos < array.length)?(toIntUnsigned(array[pos]) < ikey)?1:0:0);
+        return pos + ((pos < oldn)&&(toIntUnsigned(array[pos]) < ikey)?1:0);
     }
 
     public static int toIntUnsigned(short x) {
