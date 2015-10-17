@@ -26,18 +26,22 @@ public class ShortBinarySearch {
     @State(Scope.Benchmark)
     public static class BenchmarkState {
         @Param ({
-           "64",// "512", "1024", "2048","4096", 
+           "64", "512", //"1024", "2048","4096", 
         })
         int N;
         short[] array;
         short[] queries;
+        Random rand = new Random();
+        public short nextQuery()  {
+            return (short) rand.nextInt();
+        }
         
         public BenchmarkState() {
             array = new short[N];
             
             queries = new short[1024];
 
-            Random rand = new Random();
+            
             for(int k = 0; k < N ; ++k )
                 array[k] = (short) rand.nextInt();
             List<Short> wrapper = new AbstractList<Short>() {
@@ -81,9 +85,11 @@ public class ShortBinarySearch {
         final int oldn = array.length;
         int pos = 0;
         while(n>1) {
-            int half = n >>> 1;
-            pos = ((pos + half < oldn)&& (toIntUnsigned(array[pos + half]) < ikey )) ? pos + half: pos;
+            final int half = n >>> 1;
             n -= half;
+            final int index = pos + half <= array.length - 1 ? pos + half : array.length - 1;
+            if(toIntUnsigned(array[index]) < ikey )
+                pos = pos +half;
         }
         return pos + ((pos < oldn)&&(toIntUnsigned(array[pos]) < ikey)?1:0);
     }
@@ -119,7 +125,7 @@ public class ShortBinarySearch {
         final int l = s.queries.length;
         int bogus = 0;
         for(int k = 0; k < l; ++k) {
-            bogus += branchlessUnsignedBinarySearch(s.array, s.queries[k]); 
+            bogus += branchlessUnsignedBinarySearch(s.array, s.nextQuery()); //s.queries[k]); 
         }
         return bogus;
     }
@@ -129,7 +135,7 @@ public class ShortBinarySearch {
         final int l = s.queries.length;
         int bogus = 0;
         for(int k = 0; k < l; ++k) {
-            bogus += unsignedBinarySearch(s.array, s.queries[k]); 
+            bogus += unsignedBinarySearch(s.array, s.nextQuery());// s.queries[k]); 
         }
         return bogus;
     }
