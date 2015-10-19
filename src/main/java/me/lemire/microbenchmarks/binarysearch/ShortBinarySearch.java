@@ -25,7 +25,7 @@ public class ShortBinarySearch {
     @State(Scope.Benchmark)
     public static class BenchmarkState {
         @Param ({
-           "1000", //"1024", "2048","4096", 
+           "128", //"1024", "2048","4096", 
         })
         int N;
         short[] array;
@@ -84,34 +84,17 @@ public class ShortBinarySearch {
     public static int branchlessUnsignedBinarySearch(final short[] array, final short k) {
         int ikey = toIntUnsigned(k);
         int n = array.length;
-        //final int oldn = array.length;
         int pos = 0;
         while(n>1) {
             final int half = n >>> 1;
             n -= half;
-            int index = pos + half;
-            //index = condmov(pos + half >= array.length, array.length - 1, pos);
+            final int index = pos + half;
             final int val = array[index] & 0xFFFFFFFF;
-            pos = condmov(val < ikey, pos + half, pos);
+            pos = condmov(val < ikey, index, pos);
         }
         return pos + ((pos < array.length)&&(toIntUnsigned(array[pos]) < ikey)?1:0);
     }
-    
-    public static int oldbranchlessUnsignedBinarySearch(final short[] array, final short k) {
-        int ikey = toIntUnsigned(k);
-        int n = array.length;
-        final int oldn = array.length;
-        int pos = 0;
-        while(n>1) {
-            final int half = n >>> 1;
-            n -= half;
-            final int index = pos + half <= array.length - 1 ? pos + half : array.length - 1;
-            if(toIntUnsigned(array[index]) < ikey )
-                pos = pos +half;
-        }
-        return pos + ((pos < oldn)&&(toIntUnsigned(array[pos]) < ikey)?1:0);
-    }
-
+   
     public static int toIntUnsigned(short x) {
         return x & 0xFFFF;
     }
@@ -143,7 +126,7 @@ public class ShortBinarySearch {
         final int l = s.queries.length;
         int bogus = 0;
         for(int k = 0; k < l; ++k) {
-            bogus += branchlessUnsignedBinarySearch(s.array, s.nextQuery()); //s.queries[k]); 
+            bogus += branchlessUnsignedBinarySearch(s.array, s.queries[k]); 
         }
         return bogus;
     }
@@ -153,7 +136,7 @@ public class ShortBinarySearch {
         final int l = s.queries.length;
         int bogus = 0;
         for(int k = 0; k < l; ++k) {
-            bogus += unsignedBinarySearch(s.array, s.nextQuery());// s.queries[k]); 
+            bogus += unsignedBinarySearch(s.array, s.queries[k]); 
         }
         return bogus;
     }
