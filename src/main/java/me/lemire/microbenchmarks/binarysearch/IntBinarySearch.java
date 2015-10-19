@@ -26,7 +26,7 @@ public class IntBinarySearch {
     @State(Scope.Benchmark)
     public static class BenchmarkState {
         @Param ({
-           "1000", //"1024", "2048","4096", 
+           "128", 
         })
         int N;
         int[] array;
@@ -39,7 +39,7 @@ public class IntBinarySearch {
         
         public BenchmarkState() {
             array = new int[N];
-            queries = new int[1024];
+            queries = new int[1024*1024];
 
             
             for(int k = 0; k < N ; ++k )
@@ -116,17 +116,22 @@ public class IntBinarySearch {
     @Benchmark
     public void branchlessBinarySearch(BenchmarkState s) {
         final int l = s.queries.length;
+        int bogus = 0;
         for(int k = 0; k < l; ++k) {
-            s.bh.consume(branchlessUnsignedBinarySearch(s.array, s.queries[k])); 
+            bogus += branchlessUnsignedBinarySearch(s.array, s.queries[k]); 
         }
+        s.bh.consume(bogus);
     }
 
     @Benchmark
     public void branchyBinarySearch(BenchmarkState s) {
         final int l = s.queries.length;
+        int bogus = 0;
         for(int k = 0; k < l; ++k) {
-            s.bh.consume( unsignedBinarySearch(s.array, s.queries[k])); 
+            bogus +=  unsignedBinarySearch(s.array, s.queries[k]); 
         }
+        s.bh.consume(bogus);
+
     }
     
     

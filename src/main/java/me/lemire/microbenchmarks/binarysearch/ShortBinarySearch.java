@@ -9,6 +9,7 @@ import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -25,11 +26,12 @@ public class ShortBinarySearch {
     @State(Scope.Benchmark)
     public static class BenchmarkState {
         @Param ({
-           "128", //"1024", "2048","4096", 
+           "128" 
         })
         int N;
         short[] array;
         short[] queries;
+        Blackhole bh = new Blackhole(); 
         Random rand = new Random();
         public short nextQuery()  {
             return (short) rand.nextInt();
@@ -38,7 +40,7 @@ public class ShortBinarySearch {
         public BenchmarkState() {
             array = new short[N];
             
-            queries = new short[1024];
+            queries = new short[1024*1024];
 
             
             for(int k = 0; k < N ; ++k )
@@ -119,23 +121,23 @@ public class ShortBinarySearch {
 
     
     @Benchmark
-    public int branchlessBinarySearch(BenchmarkState s) {
+    public void branchlessBinarySearch(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
         for(int k = 0; k < l; ++k) {
-            bogus += branchlessUnsignedBinarySearch(s.array, s.queries[k]); 
+             bogus+=branchlessUnsignedBinarySearch(s.array, s.queries[k]); 
         }
-        return bogus;
+        s.bh.consume(bogus);
     }
 
     @Benchmark
-    public int branchyBinarySearch(BenchmarkState s) {
+    public void branchyBinarySearch(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
         for(int k = 0; k < l; ++k) {
-            bogus += unsignedBinarySearch(s.array, s.queries[k]); 
+            bogus+= unsignedBinarySearch(s.array, s.queries[k]); 
         }
-        return bogus;
+        s.bh.consume(bogus);
     }
     
     
