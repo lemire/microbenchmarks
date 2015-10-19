@@ -76,10 +76,6 @@ public class ShortBinarySearch {
 
     }
     
-    public static int condmov(boolean v, int newval, int oldval) {
-        return v ? newval : oldval;
-    }
-    
 
     public static int branchlessUnsignedBinarySearch(final short[] array, final short k) {
         int ikey = toIntUnsigned(k);
@@ -90,7 +86,8 @@ public class ShortBinarySearch {
             n -= half;
             final int index = pos + half;
             final int val = array[index] & 0xFFFFFFFF;
-            pos = condmov(val < ikey, index, pos);
+            if(val < ikey)
+                pos = index;
         }
         return pos + ((pos < array.length)&&(toIntUnsigned(array[pos]) < ikey)?1:0);
     }

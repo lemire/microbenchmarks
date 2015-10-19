@@ -25,7 +25,7 @@ public class IntBinarySearch {
     @State(Scope.Benchmark)
     public static class BenchmarkState {
         @Param ({
-           "128", //"1024", "2048","4096", 
+           "1000", //"1024", "2048","4096", 
         })
         int N;
         int[] array;
@@ -76,11 +76,7 @@ public class IntBinarySearch {
 
     }
     
-    public static int condmov(boolean v, int newval, int oldval) {
-        return v ? newval : oldval;
-    }
     
-
     public static int branchlessUnsignedBinarySearch(final int[] array, final int ikey) {
         int n = array.length;
         int pos = 0;
@@ -88,8 +84,8 @@ public class IntBinarySearch {
             final int half = n >>> 1;
             n -= half;
             final int index = pos + half;
-            final int val = array[index];
-            pos = condmov(val < ikey, index, pos);
+            if(array[index] < ikey) 
+                pos = index;
         }
         return pos + ((pos < array.length)&&(array[pos] < ikey)?1:0);
     }
