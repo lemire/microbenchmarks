@@ -25,10 +25,8 @@ public class IntBinarySearch {
     
     @State(Scope.Benchmark)
     public static class BenchmarkState {
-        @Param ({
-           "128", 
-        })
-        int N;
+
+        int N =128;
         int[] array;
         int[] queries;
         Blackhole bh = new Blackhole(); 
@@ -39,7 +37,7 @@ public class IntBinarySearch {
         
         public BenchmarkState() {
             array = new int[N];
-            queries = new int[1024*1024];
+            queries = new int[1024];
 
             
             for(int k = 0; k < N ; ++k )
@@ -76,6 +74,19 @@ public class IntBinarySearch {
         }
 
     }
+    public static int branchlessUnsignedBinarySearch2(final int[] array, final int ikey) {
+        int length = array.length;
+        if(length == 0) return 0;
+        int pos = 0;
+        for (int half = length/2; half != 0; length -= half, half = length/2) {
+            final int test = pos + half;   // test index will be halfway point
+            if (ikey < array[test]) {pos = test; // update index with CMOV 
+            }
+        }
+        if(array[pos] < ikey) pos = pos + 1;
+        return pos;
+    }
+    
     
     
     public static int branchlessUnsignedBinarySearch(final int[] array, final int ikey) {
@@ -124,6 +135,16 @@ public class IntBinarySearch {
     }
 
     @Benchmark
+    public void branchlessBinarySearch2(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+        for(int k = 0; k < l; ++k) {
+            bogus += branchlessUnsignedBinarySearch2(s.array, s.queries[k]); 
+        }
+        s.bh.consume(bogus);
+    }
+    
+    @Benchmark
     public void branchyBinarySearch(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
@@ -136,7 +157,7 @@ public class IntBinarySearch {
     
     
     public static void main(String[] args) throws RunnerException {
-        Options opt = new OptionsBuilder()
+       Options opt = new OptionsBuilder()
                 .include(IntBinarySearch.class.getSimpleName())
                 .warmupIterations(5)
                 .measurementIterations(5)
