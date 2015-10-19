@@ -91,6 +91,7 @@ public class IntBinarySearch {
     
     public static int branchlessUnsignedBinarySearch(final int[] array, final int ikey) {
         int n = array.length;
+        if (n == 0) return 0;
         int pos = 0;
         while(n>1) {
             final int half = n >>> 1;
@@ -99,8 +100,9 @@ public class IntBinarySearch {
             if(array[index] < ikey) 
                 pos = index;
         }
-        return pos + ((pos < array.length)&&(array[pos] < ikey)?1:0);
+        return pos + ((array[pos] < ikey)?1:0);
     }
+   
    
     
     
@@ -128,6 +130,7 @@ public class IntBinarySearch {
     public void branchlessBinarySearch(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
+
         for(int k = 0; k < l; ++k) {
             bogus += branchlessUnsignedBinarySearch(s.array, s.queries[k]); 
         }

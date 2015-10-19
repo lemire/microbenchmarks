@@ -22,13 +22,14 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 public class ShortBinarySearch {
-    
+    @Param ({
+        "32", "128", "1024", "2048" 
+    })
+    static
+    int N;
     @State(Scope.Benchmark)
     public static class BenchmarkState {
-        @Param ({
-           "128" 
-        })
-        int N;
+        
         short[] array;
         short[] queries;
         Blackhole bh = new Blackhole(); 
@@ -40,7 +41,7 @@ public class ShortBinarySearch {
         public BenchmarkState() {
             array = new short[N];
             
-            queries = new short[1024*1024];
+            queries = new short[1024];
 
             
             for(int k = 0; k < N ; ++k )
@@ -71,8 +72,9 @@ public class ShortBinarySearch {
                 public int compare(Short o1, Short o2) {
                     return (o1.shortValue() & 0xFFFF) - (o2.shortValue() & 0xFFFF);
                 }});
-            for(int k = 0; k < queries.length ; ++k )
+            for(int k = 0; k < queries.length ; ++k ) {
                 queries[k] = (short) rand.nextInt();
+            }
             
         }
 
@@ -93,6 +95,7 @@ public class ShortBinarySearch {
         }
         return pos + ((pos < array.length)&&(toIntUnsigned(array[pos]) < ikey)?1:0);
     }
+    
    
     public static int toIntUnsigned(short x) {
         return x & 0xFFFF;
