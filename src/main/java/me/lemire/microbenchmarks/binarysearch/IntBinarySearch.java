@@ -9,6 +9,7 @@ import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -30,6 +31,7 @@ public class IntBinarySearch {
         int N;
         int[] array;
         int[] queries;
+        Blackhole bh = new Blackhole(); 
         Random rand = new Random();
         public int nextQuery()  {
             return  rand.nextInt();
@@ -37,7 +39,6 @@ public class IntBinarySearch {
         
         public BenchmarkState() {
             array = new int[N];
-            
             queries = new int[1024];
 
             
@@ -113,23 +114,19 @@ public class IntBinarySearch {
 
     
     @Benchmark
-    public int branchlessBinarySearch(BenchmarkState s) {
+    public void branchlessBinarySearch(BenchmarkState s) {
         final int l = s.queries.length;
-        int bogus = 0;
         for(int k = 0; k < l; ++k) {
-            bogus += branchlessUnsignedBinarySearch(s.array, s.queries[k]); 
+            s.bh.consume(branchlessUnsignedBinarySearch(s.array, s.queries[k])); 
         }
-        return bogus;
     }
 
     @Benchmark
-    public int branchyBinarySearch(BenchmarkState s) {
+    public void branchyBinarySearch(BenchmarkState s) {
         final int l = s.queries.length;
-        int bogus = 0;
         for(int k = 0; k < l; ++k) {
-            bogus += unsignedBinarySearch(s.array, s.queries[k]); 
+            s.bh.consume( unsignedBinarySearch(s.array, s.queries[k])); 
         }
-        return bogus;
     }
     
     
