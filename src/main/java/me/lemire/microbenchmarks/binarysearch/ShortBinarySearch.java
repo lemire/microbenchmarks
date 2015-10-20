@@ -1,7 +1,5 @@
 package me.lemire.microbenchmarks.binarysearch;
 
-
-
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Mode;
@@ -22,29 +20,27 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 public class ShortBinarySearch {
-    @Param ({
-        "32", "128", "1024", "2048" 
-    })
-    static
-    int N;
+    @Param({ "32", "128", "1024", "2048" })
+    static int N;
+
     @State(Scope.Benchmark)
     public static class BenchmarkState {
-        
+
         short[] array;
         short[] queries;
-        Blackhole bh = new Blackhole(); 
+        Blackhole bh = new Blackhole();
         Random rand = new Random();
-        public short nextQuery()  {
+
+        public short nextQuery() {
             return (short) rand.nextInt();
         }
-        
+
         public BenchmarkState() {
             array = new short[N];
-            
+
             queries = new short[1024];
 
-            
-            for(int k = 0; k < N ; ++k )
+            for (int k = 0; k < N; ++k)
                 array[k] = (short) rand.nextInt();
             List<Short> wrapper = new AbstractList<Short>() {
 
@@ -66,52 +62,89 @@ public class ShortBinarySearch {
                 }
 
             };
-            Collections.sort(wrapper, new Comparator<Short>(){
+            Collections.sort(wrapper, new Comparator<Short>() {
 
                 @Override
                 public int compare(Short o1, Short o2) {
-                    return (o1.shortValue() & 0xFFFF) - (o2.shortValue() & 0xFFFF);
-                }});
-            for(int k = 0; k < queries.length ; ++k ) {
+                    return (o1.shortValue() & 0xFFFF)
+                            - (o2.shortValue() & 0xFFFF);
+                }
+            });
+            // check that it is actually sorted!
+            for(int k = 1; k < array.length; ++k){
+                if((array[k] & 0xFFFF) < (array[k-1] & 0xFFFF)) throw new RuntimeException("bug");
+            }
+            for (int k = 0; k < queries.length; ++k) {
                 queries[k] = (short) rand.nextInt();
             }
-            
+
         }
 
     }
-    
-    public static int sequentialUnsignedSearch(final short[] array, final short ikey) {
+
+    public static int sequentialUnsignedSearch(final short[] array,
+            final short ikey) {
         int c = array.length;
         int k = 0;
-        int key = ikey &0xFFFF;
-        for(; k < c; ++k) {
-            if((array[k] &0xFFFF) >= key) return k;
+        int key = ikey & 0xFFFF;
+        for (; k < c; ++k) {
+            if ((array[k] & 0xFFFF) >= key)
+                return k;
         }
         return k;
     }
 
-    
-    public static int branchlessUnsignedBinarySearch(final short[] array, final short k) {
+    public static int branchlessUnsignedBinarySearch(final short[] array,
+            final short k) {
         int ikey = toIntUnsigned(k);
         int n = array.length;
         int pos = 0;
-        while(n>1) {
+        while (n > 1) {
             final int half = n >>> 1;
             n -= half;
             final int index = pos + half;
-            final int val = array[index] & 0xFFFFFFFF;
-            if(val < ikey)
+            final int val = array[index] & 0xFFFF;
+            if (val < ikey)
                 pos = index;
         }
-        return pos + ((pos < array.length)&&(toIntUnsigned(array[pos]) < ikey)?1:0);
+        // next commented line is upper bound
+        // return pos + ((pos < array.length)&&(toIntUnsigned(array[pos]) <
+        // ikey)?1:0);
+        // next is just patching up....
+        pos += ((pos < array.length) && (toIntUnsigned(array[pos]) < ikey) ? 1
+                : 0);
+        if ((pos < array.length) && (toIntUnsigned(array[pos]) == ikey))
+            return pos;
+        return -(pos + 1);
     }
-    
-   
+
+    public static int branchlessUnsignedBinarySearch2(final short[] array,
+            final short k) {
+        int ikey = toIntUnsigned(k);
+        int n = array.length;
+        int pos = 0;
+        while (n > 1) {
+            final int half = n >>> 1;
+            n -= half;
+            final int index = pos + half;
+            final int val = array[index] & 0xFFFF;
+            pos += ((val - ikey)>>31) & half;
+        }
+        // next commented line is upper bound
+        // return pos + ((pos < array.length)&&(toIntUnsigned(array[pos]) <
+        // ikey)?1:0);
+        // next is just patching up....
+        pos += ((pos < array.length) && (toIntUnsigned(array[pos]) < ikey) ? 1
+                : 0);
+        if ((pos < array.length) && (toIntUnsigned(array[pos]) == ikey))
+            return pos;
+        return -(pos + 1);
+    }
+
     public static int toIntUnsigned(short x) {
         return x & 0xFFFF;
     }
-    
-    
+
     public static int unsignedBinarySearch(final short[] array, final short k) {
         int ikey = toIntUnsigned(k);
         int low = 0;
@@ -129,48 +162,52 @@ public class ShortBinarySearch {
         }
         return -(low + 1);
     }
-    
-    
+
     @Benchmark
     public void SequentialUnsignedSearch(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
-        for(int k = 0; k < l; ++k) {
-             bogus+=sequentialUnsignedSearch(s.array, s.queries[k]); 
+        for (int k = 0; k < l; ++k) {
+            bogus += sequentialUnsignedSearch(s.array, s.queries[k]);
         }
         s.bh.consume(bogus);
     }
 
-
-    
     @Benchmark
     public void branchlessBinarySearch(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
-        for(int k = 0; k < l; ++k) {
-             bogus+=branchlessUnsignedBinarySearch(s.array, s.queries[k]); 
+        for (int k = 0; k < l; ++k) {
+            bogus += branchlessUnsignedBinarySearch(s.array, s.queries[k]);
         }
         s.bh.consume(bogus);
     }
 
     @Benchmark
-    public void branchyBinarySearch(BenchmarkState s) {
+    public void branchlessBinarySearch2(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
-        for(int k = 0; k < l; ++k) {
-            bogus+= unsignedBinarySearch(s.array, s.queries[k]); 
+        for (int k = 0; k < l; ++k) {
+            bogus += branchlessUnsignedBinarySearch2(s.array, s.queries[k]);
         }
         s.bh.consume(bogus);
     }
+
     
-    
+    @Benchmark
+    public void branchyBinarySearch(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+        for (int k = 0; k < l; ++k) {
+            bogus += unsignedBinarySearch(s.array, s.queries[k]);
+        }
+        s.bh.consume(bogus);
+    }
+
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(ShortBinarySearch.class.getSimpleName())
-                .warmupIterations(5)
-                .measurementIterations(5)
-                .forks(1)
-                .build();
+                .warmupIterations(5).measurementIterations(5).forks(1).build();
 
         new Runner(opt).run();
     }

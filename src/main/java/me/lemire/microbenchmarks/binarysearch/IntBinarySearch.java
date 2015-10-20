@@ -32,6 +32,7 @@ public class IntBinarySearch {
 
         int[] array;
         int[] queries;
+        private static int MMAX = 10000000;
         Blackhole bh = new Blackhole(); 
         Random rand = new Random();
         public int nextQuery()  {
@@ -44,7 +45,7 @@ public class IntBinarySearch {
 
             
             for(int k = 0; k < N ; ++k )
-                array[k] =  rand.nextInt();
+                array[k] =  rand.nextInt(MMAX);
             List<Integer> wrapper = new AbstractList<Integer>() {
 
                 @Override
@@ -69,10 +70,14 @@ public class IntBinarySearch {
 
                 @Override
                 public int compare(Integer o1, Integer o2) {
-                    return (o1.intValue() & 0xFFFF) - (o2.intValue() & 0xFFFF);
+                    return (o1.intValue() ) - (o2.intValue());
                 }});
+            // check that it is actually sorted!
+            for(int k = 1; k < array.length; ++k){
+                if(array[k] < array[k-1]) throw new RuntimeException("bug");
+            }
             for(int k = 0; k < queries.length ; ++k )
-                queries[k] =  rand.nextInt();
+                queries[k] = rand.nextInt(MMAX);
             
         }
 
@@ -82,8 +87,9 @@ public class IntBinarySearch {
         if(length == 0) return 0;
         int pos = 0;
         for (int half = length/2; half != 0; length -= half, half = length/2) {
-            final int test = pos + half;   // test index will be halfway point
-            if (ikey < array[test]) {pos = test; // update index with CMOV 
+            final int test = pos + half;   
+            if (ikey < array[test]) {
+                pos = test; // update index with CMOV 
             }
         }
         if(array[pos] < ikey) pos = pos + 1;
@@ -127,17 +133,7 @@ public class IntBinarySearch {
         return k;
     }
        
-    
-    @Benchmark
-    public void SequentialSearch(BenchmarkState s) {
-        final int l = s.queries.length;
-        int bogus = 0;
 
-        for(int k = 0; k < l; ++k) {
-            bogus += sequentialSearch(s.array, s.queries[k]); 
-        }
-        s.bh.consume(bogus);
-    }
     
     public static int BinarySearch(final int[] array, final int ikey) {
         int low = 0;
@@ -157,7 +153,17 @@ public class IntBinarySearch {
     }
     
 
+    
+    @Benchmark
+    public void SequentialSearch(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
 
+        for(int k = 0; k < l; ++k) {
+            bogus += sequentialSearch(s.array, s.queries[k]); 
+        }
+        s.bh.consume(bogus);
+    }
     
     @Benchmark
     public void branchlessBinarySearch(BenchmarkState s) {
