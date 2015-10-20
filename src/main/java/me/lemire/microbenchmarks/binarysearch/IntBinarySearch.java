@@ -22,11 +22,14 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 public class IntBinarySearch {
-    
+    @Param ({
+        "32", "128", "1024", "2048" 
+    })
+    static
+    int N;
     @State(Scope.Benchmark)
     public static class BenchmarkState {
 
-        int N =128;
         int[] array;
         int[] queries;
         Blackhole bh = new Blackhole(); 
