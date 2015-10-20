@@ -80,7 +80,17 @@ public class ShortBinarySearch {
 
     }
     
+    public static int sequentialUnsignedSearch(final short[] array, final short ikey) {
+        int c = array.length;
+        int k = 0;
+        int key = ikey &0xFFFF;
+        for(; k < c; ++k) {
+            if((array[k] &0xFFFF) >= key) return k;
+        }
+        return k;
+    }
 
+    
     public static int branchlessUnsignedBinarySearch(final short[] array, final short k) {
         int ikey = toIntUnsigned(k);
         int n = array.length;
@@ -120,6 +130,16 @@ public class ShortBinarySearch {
         return -(low + 1);
     }
     
+    
+    @Benchmark
+    public void SequentialUnsignedSearch(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+        for(int k = 0; k < l; ++k) {
+             bogus+=sequentialUnsignedSearch(s.array, s.queries[k]); 
+        }
+        s.bh.consume(bogus);
+    }
 
 
     

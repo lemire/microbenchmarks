@@ -74,7 +74,7 @@ public class IntBinarySearch {
         }
 
     }
-    public static int branchlessUnsignedBinarySearch2(final int[] array, final int ikey) {
+    public static int branchlessBinarySearch2(final int[] array, final int ikey) {
         int length = array.length;
         if(length == 0) return 0;
         int pos = 0;
@@ -89,7 +89,7 @@ public class IntBinarySearch {
     
     
     
-    public static int branchlessUnsignedBinarySearch(final int[] array, final int ikey) {
+    public static int branchlessBinarySearch(final int[] array, final int ikey) {
         int n = array.length;
         if (n == 0) return 0;
         int pos = 0;
@@ -103,10 +103,40 @@ public class IntBinarySearch {
         return pos + ((array[pos] < ikey)?1:0);
     }
    
-   
+    public static int hackedbranchlessBinarySearch(final int[] array, final int ikey) {
+        int n = array.length;
+        if (n == 0) return 0;
+        int pos = 0;
+        while(n>1) {
+            final int half = n >>> 1;
+            pos += ((array[pos + half] - ikey)>>31) & half;
+            n -= half;
+        }
+        return pos + ((array[pos] < ikey)?1:0);
+    }
     
+    public static int sequentialSearch(final int[] array, final int ikey) {
+        int c = array.length;
+        int k = 0;
+        for(; k < c; ++k) {
+            if(array[k] >= ikey) return k;
+        }
+        return k;
+    }
+       
     
-    public static int unsignedBinarySearch(final int[] array, final int ikey) {
+    @Benchmark
+    public void SequentialSearch(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+
+        for(int k = 0; k < l; ++k) {
+            bogus += sequentialSearch(s.array, s.queries[k]); 
+        }
+        s.bh.consume(bogus);
+    }
+    
+    public static int BinarySearch(final int[] array, final int ikey) {
         int low = 0;
         int high = array.length - 1;
         while (low <= high) {
@@ -132,17 +162,31 @@ public class IntBinarySearch {
         int bogus = 0;
 
         for(int k = 0; k < l; ++k) {
-            bogus += branchlessUnsignedBinarySearch(s.array, s.queries[k]); 
+            bogus += branchlessBinarySearch(s.array, s.queries[k]); 
         }
         s.bh.consume(bogus);
     }
 
+    
+    @Benchmark
+    public void hackedbranchlessBinarySearch(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+
+        for(int k = 0; k < l; ++k) {
+            bogus += hackedbranchlessBinarySearch(s.array, s.queries[k]); 
+        }
+        s.bh.consume(bogus);
+    }
+
+
+    
     @Benchmark
     public void branchlessBinarySearch2(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
         for(int k = 0; k < l; ++k) {
-            bogus += branchlessUnsignedBinarySearch2(s.array, s.queries[k]); 
+            bogus += branchlessBinarySearch2(s.array, s.queries[k]); 
         }
         s.bh.consume(bogus);
     }
@@ -152,7 +196,7 @@ public class IntBinarySearch {
         final int l = s.queries.length;
         int bogus = 0;
         for(int k = 0; k < l; ++k) {
-            bogus +=  unsignedBinarySearch(s.array, s.queries[k]); 
+            bogus +=  BinarySearch(s.array, s.queries[k]); 
         }
         s.bh.consume(bogus);
 
