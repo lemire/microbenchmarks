@@ -133,6 +133,30 @@ public class ShortBinarySearch {
             return pos;
         return -(pos + 1);
     }
+
+
+    public static int branchlessUnsignedBinarySearch2b(final short[] array,
+            final short k) {
+        int ikey = toIntUnsigned(k);
+        int n = array.length;
+        int pos = 0;
+        while (n > 1) {
+            final int half = n >>> 1;
+            n -= half;
+            final int index = pos + half;
+            final int val = array[index] & 0xFFFF;
+            final int diff = val - ikey;
+            final int mask = diff >> 31;
+            final int addition = half & mask;
+            pos += addition;
+        }
+        // next  line is upper bound
+        if(toIntUnsigned(array[pos]) < ikey) pos = pos + 1;
+        if ((pos < array.length) && (toIntUnsigned(array[pos]) == ikey))
+            return pos;
+        return -(pos + 1);
+    }
+
  /* 
   public static int branchlessUnsignedBinarySearch3(final short[] array,
             final short k) {
@@ -204,7 +228,18 @@ public class ShortBinarySearch {
         }
         s.bh.consume(bogus);
     }
-  /*  @Benchmark
+
+    @Benchmark
+    public void branchlessBinarySearch2b(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+        for (int k = 0; k < l; ++k) {
+            bogus += branchlessUnsignedBinarySearch2b(s.array, s.queries[k]);
+        }
+        s.bh.consume(bogus);
+    }
+
+    /*  @Benchmark
     public void branchlessBinarySearch3(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
