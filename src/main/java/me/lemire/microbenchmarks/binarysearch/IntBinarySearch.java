@@ -105,6 +105,42 @@ public class IntBinarySearch {
     }
     
     
+    public static int branchlessBinarySearch2(final int[] array, final int ikey) {
+        int n = array.length;
+        if (n == 0) return 0;
+        int pos = 0;
+        while(n>1) {
+            final int half = n >>> 1;
+            n -= half;
+            final int index = pos + half;
+            if(array[index] < ikey) 
+                pos = index;
+        }
+        if(array[pos] < ikey) pos = pos + 1;
+        // that would be the answer if upper bound sought
+        //return pos;
+        if ((pos < array.length) && (array[pos] == ikey))
+            return pos;
+        return -(pos + 1);
+    }
+   
+    public static int branchlessBinarySearch3(final int[] array, final int ikey) {
+        int n = array.length;
+        if (n == 0) return 0;
+        int pos = 0;
+        while(n>1) {
+            final int half = n >>> 1;
+            pos += ((array[pos + half] - ikey)>>31) & half;
+            n -= half;
+        }
+        if(array[pos] < ikey) pos = pos + 1;
+        // that would be the answer if upper bound sought
+        //return pos;
+        if ((pos < array.length) && (array[pos] == ikey))
+            return pos;
+        return -(pos + 1);
+    }
+    
     
     
     public static int sequentialSearch(final int[] array, final int ikey) {
@@ -149,11 +185,33 @@ public class IntBinarySearch {
     }
     
     @Benchmark
-    public void branchlessBinarySearch2(BenchmarkState s) {
+    public void branchlessBinarySearch(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
         for(int k = 0; k < l; ++k) {
             bogus += branchlessBinarySearch(s.array, s.queries[k]); 
+        }
+        s.bh.consume(bogus);
+    }
+    
+
+    @Benchmark
+    public void branchlessBinarySearch2(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+        for(int k = 0; k < l; ++k) {
+            bogus += branchlessBinarySearch2(s.array, s.queries[k]); 
+        }
+        s.bh.consume(bogus);
+    }
+    
+
+    @Benchmark
+    public void branchlessBinarySearch3(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+        for(int k = 0; k < l; ++k) {
+            bogus += branchlessBinarySearch3(s.array, s.queries[k]); 
         }
         s.bh.consume(bogus);
     }
