@@ -94,7 +94,7 @@ public class ShortBinarySearch {
         return k;
     }
 
-    public static int branchlessUnsignedBinarySearch(final short[] array,
+/*    public static int branchlessUnsignedBinarySearch(final short[] array,
             final short k) {
         int ikey = toIntUnsigned(k);
         int n = array.length;
@@ -113,7 +113,7 @@ public class ShortBinarySearch {
             return pos;
         return -(pos + 1);
     }
-
+*/
     // this appears to be the fastest
     public static int branchlessUnsignedBinarySearch2(final short[] array,
             final short k) {
@@ -133,8 +133,8 @@ public class ShortBinarySearch {
             return pos;
         return -(pos + 1);
     }
-
-    public static int branchlessUnsignedBinarySearch3(final short[] array,
+ /* 
+  public static int branchlessUnsignedBinarySearch3(final short[] array,
             final short k) {
         int ikey = toIntUnsigned(k);
         int n = array.length;
@@ -152,7 +152,7 @@ public class ShortBinarySearch {
             return pos;
         return -(pos + 1);
     }
-
+*/
     public static int toIntUnsigned(short x) {
         return x & 0xFFFF;
     }
@@ -185,7 +185,7 @@ public class ShortBinarySearch {
         s.bh.consume(bogus);
     }
 
-    @Benchmark
+  /*  @Benchmark
     public void branchlessBinarySearch(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
@@ -194,7 +194,7 @@ public class ShortBinarySearch {
         }
         s.bh.consume(bogus);
     }
-
+*/
     @Benchmark
     public void branchlessBinarySearch2(BenchmarkState s) {
         final int l = s.queries.length;
@@ -204,16 +204,16 @@ public class ShortBinarySearch {
         }
         s.bh.consume(bogus);
     }
-    @Benchmark
+  /*  @Benchmark
     public void branchlessBinarySearch3(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
         for (int k = 0; k < l; ++k) {
-            bogus += branchlessUnsignedBinarySearch2(s.array, s.queries[k]);
+            bogus += branchlessUnsignedBinarySearch3(s.array, s.queries[k]);
         }
         s.bh.consume(bogus);
     }
-
+*/
     
     @Benchmark
     public void branchyBinarySearch(BenchmarkState s) {
