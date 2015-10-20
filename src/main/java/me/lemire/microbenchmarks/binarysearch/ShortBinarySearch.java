@@ -115,7 +115,7 @@ public class ShortBinarySearch {
     }
 */
     // this appears to be the fastest
-    public static int branchlessUnsignedBinarySearch2(final short[] array,
+/*    public static int branchlessUnsignedBinarySearch2(final short[] array,
             final short k) {
         int ikey = toIntUnsigned(k);
         int n = array.length;
@@ -132,7 +132,7 @@ public class ShortBinarySearch {
         if ((pos < array.length) && (toIntUnsigned(array[pos]) == ikey))
             return pos;
         return -(pos + 1);
-    }
+    }*/
 
 
     public static int branchlessUnsignedBinarySearch2b(final short[] array,
@@ -219,7 +219,7 @@ public class ShortBinarySearch {
         s.bh.consume(bogus);
     }
 */
-    @Benchmark
+/*    @Benchmark
     public void branchlessBinarySearch2(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
@@ -227,7 +227,7 @@ public class ShortBinarySearch {
             bogus += branchlessUnsignedBinarySearch2(s.array, s.queries[k]);
         }
         s.bh.consume(bogus);
-    }
+    }*/
 
     @Benchmark
     public void branchlessBinarySearch2b(BenchmarkState s) {
