@@ -141,6 +141,30 @@ public class IntBinarySearch {
         return -(pos + 1);
     }
     
+    public static int branchlessBinarySearch3b(final int[] array, final int ikey) {
+        int n = array.length;
+        if (n == 0) return 0;
+        int pos = 0;
+        while(n>1) {
+            final int half = n >>> 1;
+            n -= half;
+            final int index = pos + half;
+            final int val = array[index];
+            final int diff = val - ikey;
+            final int mask = diff >> 31;
+            final int addition = half & mask;
+            pos += addition;
+        }
+        if(array[pos] < ikey) pos = pos + 1;
+        // that would be the answer if upper bound sought
+        //return pos;
+        if ((pos < array.length) && (array[pos] == ikey))
+            return pos;
+        return -(pos + 1);
+    }
+    
+
+    
     
     
     public static int sequentialSearch(final int[] array, final int ikey) {
@@ -212,6 +236,17 @@ public class IntBinarySearch {
         int bogus = 0;
         for(int k = 0; k < l; ++k) {
             bogus += branchlessBinarySearch3(s.array, s.queries[k]); 
+        }
+        s.bh.consume(bogus);
+    }
+    
+
+    @Benchmark
+    public void branchlessBinarySearch3b(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+        for(int k = 0; k < l; ++k) {
+            bogus += branchlessBinarySearch3b(s.array, s.queries[k]); 
         }
         s.bh.consume(bogus);
     }
