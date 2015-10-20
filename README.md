@@ -11,4 +11,8 @@ This is my answer to the following blog post: http://www.vitavonni.de/blog/20141
 
         mvn clean install
         java -cp target/microbenchmarks-0.0.1-jar-with-dependencies.jar me.lemire.microbenchmarks.integersum.SumBenchmark -wi 5 -i 5 -f 1
+
+Binary search
+--------------
+        java -cp target/microbenchmarks-0.0.1-jar-with-dependencies.jar me.lemire.microbenchmarks.binarysearch.IntBinarySearch  -wi 5 -i 5 -f 1
         java -cp target/microbenchmarks-0.0.1-jar-with-dependencies.jar me.lemire.microbenchmarks.binarysearch.ShortBinarySearch  -wi 5 -i 5 -f 1
