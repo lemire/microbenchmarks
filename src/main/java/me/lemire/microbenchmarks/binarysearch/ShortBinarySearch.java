@@ -141,6 +141,29 @@ public class ShortBinarySearch {
         return -(pos + 1);
     }
 
+    public static int branchlessUnsignedBinarySearch3(final short[] array,
+            final short k) {
+        int ikey = toIntUnsigned(k);
+        int n = array.length;
+        if(n == 0) return 0;
+        int pos = 0;
+        for (int half = n/2; half != 0; n -= half, half = n/2) {
+          final int test = pos + half;
+          if ( (array[test] &0xFFFF) < ikey) {
+              pos = test; // update index with CMOV
+          }
+        }
+        // next commented line is upper bound
+        // return pos + ((pos < array.length)&&(toIntUnsigned(array[pos]) <
+        // ikey)?1:0);
+        // next is just patching up....
+        pos += ((pos < array.length) && (toIntUnsigned(array[pos]) < ikey) ? 1
+                : 0);
+        if ((pos < array.length) && (toIntUnsigned(array[pos]) == ikey))
+            return pos;
+        return -(pos + 1);
+    }
+
     public static int toIntUnsigned(short x) {
         return x & 0xFFFF;
     }
@@ -185,6 +208,15 @@ public class ShortBinarySearch {
 
     @Benchmark
     public void branchlessBinarySearch2(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+        for (int k = 0; k < l; ++k) {
+            bogus += branchlessUnsignedBinarySearch2(s.array, s.queries[k]);
+        }
+        s.bh.consume(bogus);
+    }
+    @Benchmark
+    public void branchlessBinarySearch3(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
         for (int k = 0; k < l; ++k) {
