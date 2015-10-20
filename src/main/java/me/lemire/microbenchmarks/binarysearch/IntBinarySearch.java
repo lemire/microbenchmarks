@@ -85,8 +85,7 @@ public class IntBinarySearch {
     
     
     
-    // this appears to be the fastest
-    public static int branchlessBinarySearch(final int[] array, final int ikey) {
+/*    public static int branchlessBinarySearch(final int[] array, final int ikey) {
         int length = array.length;
         if(length == 0) return 0;
         int pos = 0;
@@ -123,7 +122,7 @@ public class IntBinarySearch {
             return pos;
         return -(pos + 1);
     }
-   
+  */ 
     public static int branchlessBinarySearch3(final int[] array, final int ikey) {
         int n = array.length;
         if (n == 0) return 0;
@@ -183,7 +182,7 @@ public class IntBinarySearch {
         }
         s.bh.consume(bogus);
     }
-    
+    /*
     @Benchmark
     public void branchlessBinarySearch(BenchmarkState s) {
         final int l = s.queries.length;
@@ -204,7 +203,7 @@ public class IntBinarySearch {
         }
         s.bh.consume(bogus);
     }
-    
+    */
 
     @Benchmark
     public void branchlessBinarySearch3(BenchmarkState s) {
