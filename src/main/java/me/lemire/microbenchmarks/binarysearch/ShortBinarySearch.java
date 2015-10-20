@@ -107,17 +107,14 @@ public class ShortBinarySearch {
             if (val < ikey)
                 pos = index;
         }
-        // next commented line is upper bound
-        // return pos + ((pos < array.length)&&(toIntUnsigned(array[pos]) <
-        // ikey)?1:0);
-        // next is just patching up....
-        pos += ((pos < array.length) && (toIntUnsigned(array[pos]) < ikey) ? 1
-                : 0);
+        // next  line is upper bound
+        if(toIntUnsigned(array[pos]) < ikey) pos = pos + 1;
         if ((pos < array.length) && (toIntUnsigned(array[pos]) == ikey))
             return pos;
         return -(pos + 1);
     }
 
+    // this appears to be the fastest
     public static int branchlessUnsignedBinarySearch2(final short[] array,
             final short k) {
         int ikey = toIntUnsigned(k);
@@ -130,12 +127,8 @@ public class ShortBinarySearch {
             final int val = array[index] & 0xFFFF;
             pos += ((val - ikey)>>31) & half;
         }
-        // next commented line is upper bound
-        // return pos + ((pos < array.length)&&(toIntUnsigned(array[pos]) <
-        // ikey)?1:0);
-        // next is just patching up....
-        pos += ((pos < array.length) && (toIntUnsigned(array[pos]) < ikey) ? 1
-                : 0);
+        // next  line is upper bound
+        if(toIntUnsigned(array[pos]) < ikey) pos = pos + 1;
         if ((pos < array.length) && (toIntUnsigned(array[pos]) == ikey))
             return pos;
         return -(pos + 1);
@@ -153,12 +146,8 @@ public class ShortBinarySearch {
               pos = test; // update index with CMOV
           }
         }
-        // next commented line is upper bound
-        // return pos + ((pos < array.length)&&(toIntUnsigned(array[pos]) <
-        // ikey)?1:0);
-        // next is just patching up....
-        pos += ((pos < array.length) && (toIntUnsigned(array[pos]) < ikey) ? 1
-                : 0);
+        // next  line is upper bound
+        if(toIntUnsigned(array[pos]) < ikey) pos = pos + 1;
         if ((pos < array.length) && (toIntUnsigned(array[pos]) == ikey))
             return pos;
         return -(pos + 1);

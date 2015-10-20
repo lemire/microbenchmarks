@@ -82,47 +82,30 @@ public class IntBinarySearch {
         }
 
     }
-    public static int branchlessBinarySearch2(final int[] array, final int ikey) {
+    
+    
+    
+    // this appears to be the fastest
+    public static int branchlessBinarySearch(final int[] array, final int ikey) {
         int length = array.length;
         if(length == 0) return 0;
         int pos = 0;
         for (int half = length/2; half != 0; length -= half, half = length/2) {
             final int test = pos + half;   
-            if (ikey < array[test]) {
+            if ( array[test] < ikey) {
                 pos = test; // update index with CMOV 
             }
         }
         if(array[pos] < ikey) pos = pos + 1;
-        return pos;
+        // that would be the answer if upper bound sought
+        //return pos;
+        if ((pos < array.length) && (array[pos] == ikey))
+            return pos;
+        return -(pos + 1);
     }
     
     
     
-    public static int branchlessBinarySearch(final int[] array, final int ikey) {
-        int n = array.length;
-        if (n == 0) return 0;
-        int pos = 0;
-        while(n>1) {
-            final int half = n >>> 1;
-            n -= half;
-            final int index = pos + half;
-            if(array[index] < ikey) 
-                pos = index;
-        }
-        return pos + ((array[pos] < ikey)?1:0);
-    }
-   
-    public static int hackedbranchlessBinarySearch(final int[] array, final int ikey) {
-        int n = array.length;
-        if (n == 0) return 0;
-        int pos = 0;
-        while(n>1) {
-            final int half = n >>> 1;
-            pos += ((array[pos + half] - ikey)>>31) & half;
-            n -= half;
-        }
-        return pos + ((array[pos] < ikey)?1:0);
-    }
     
     public static int sequentialSearch(final int[] array, final int ikey) {
         int c = array.length;
@@ -166,36 +149,11 @@ public class IntBinarySearch {
     }
     
     @Benchmark
-    public void branchlessBinarySearch(BenchmarkState s) {
-        final int l = s.queries.length;
-        int bogus = 0;
-
-        for(int k = 0; k < l; ++k) {
-            bogus += branchlessBinarySearch(s.array, s.queries[k]); 
-        }
-        s.bh.consume(bogus);
-    }
-
-    
-    @Benchmark
-    public void hackedbranchlessBinarySearch(BenchmarkState s) {
-        final int l = s.queries.length;
-        int bogus = 0;
-
-        for(int k = 0; k < l; ++k) {
-            bogus += hackedbranchlessBinarySearch(s.array, s.queries[k]); 
-        }
-        s.bh.consume(bogus);
-    }
-
-
-    
-    @Benchmark
     public void branchlessBinarySearch2(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
         for(int k = 0; k < l; ++k) {
-            bogus += branchlessBinarySearch2(s.array, s.queries[k]); 
+            bogus += branchlessBinarySearch(s.array, s.queries[k]); 
         }
         s.bh.consume(bogus);
     }
