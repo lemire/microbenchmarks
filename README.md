@@ -16,3 +16,9 @@ Binary search
 --------------
         java -cp target/microbenchmarks-0.0.1-jar-with-dependencies.jar me.lemire.microbenchmarks.binarysearch.IntBinarySearch  -wi 5 -i 5 -f 1
         java -cp target/microbenchmarks-0.0.1-jar-with-dependencies.jar me.lemire.microbenchmarks.binarysearch.ShortBinarySearch  -wi 5 -i 5 -f 1
+
+
+Hashing
+---------
+
+        java -cp target/microbenchmarks-0.0.1-jar-with-dependencies.jar me/lemire/hashing/InterleavedHash
