@@ -262,6 +262,18 @@ public class IntBinarySearch {
     }
     
     
+
+    @Benchmark
+    public void standardBinarySearch(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+        for(int k = 0; k < l; ++k) {
+            bogus +=  Arrays.binarySearch(s.array, s.queries[k]); 
+        }
+        s.bh.consume(bogus);
+
+    }
+    
     public static void main(String[] args) throws RunnerException {
        Options opt = new OptionsBuilder()
                 .include(IntBinarySearch.class.getSimpleName())
