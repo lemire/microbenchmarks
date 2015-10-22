@@ -12,6 +12,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.concurrent.TimeUnit;
+import java.util.*;
 
 @State(Scope.Thread)
 @BenchmarkMode(Mode.AverageTime)
@@ -21,7 +22,7 @@ public class InterleavedHash {
     public int standardHash(BenchmarkState s) {
         char[] val = s.array;
         int len = val.length;
-        int h = 0;
+        int h = 1;
         for (int i = 0; i < len; i++) {
             h = 31 * h + val[i];
         }
@@ -29,11 +30,17 @@ public class InterleavedHash {
 
     }
 
+    
+    @Benchmark
+    public int hashCode(BenchmarkState s) {
+        return Arrays.hashCode(s.array);
+    }
+
     @Benchmark
     public int standardHash4(BenchmarkState s) {
         char[] val = s.array;
         int len = val.length;
-        int h = 0;
+        int h = 1;
         int i = 0;
         for (; i + 3 < len; i += 4) {
             h = 31 * 31 * 31 * 31 * h + 31 * 31 * 31 * val[i] + 31 * 31
@@ -51,7 +58,7 @@ public class InterleavedHash {
     public int standardHash8(BenchmarkState s) {
         char[] val = s.array;
         int len = val.length;
-        int h = 0;
+        int h = 1;
         int i = 0;
         for (; i + 7 < len; i += 8) {
             h = 31 * 31 * 31 * 31 * 31 * 31 * 31 * 31 * h + 31 * 31 * 31 * 31
@@ -82,7 +89,6 @@ public class InterleavedHash {
             array = new char[64];
             for (int k = 0; k < array.length; ++k)
                 array[k] = (char) k;
-
         }
 
     }
@@ -95,3 +101,4 @@ public class InterleavedHash {
         new Runner(opt).run();
     }
 }
+
