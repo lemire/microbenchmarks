@@ -35,8 +35,9 @@ public class InterleavedHash {
         int len = val.length;
         int h = 0;
         int i = 0;
-        for (; i + 3< len; i+=4) {
-            h = 31 * 31 * 31 *  31 * h + 31 * 31 * 31 * val[i]  + 31 * 31 * val[i + 1] + 31 * val[i + 2] + val[i + 3];
+        for (; i + 3 < len; i += 4) {
+            h = 31 * 31 * 31 * 31 * h + 31 * 31 * 31 * val[i] + 31 * 31
+                    * val[i + 1] + 31 * val[i + 2] + val[i + 3];
         }
         for (; i < len; i++) {
             h = 31 * h + val[i];
@@ -46,19 +47,23 @@ public class InterleavedHash {
 
     }
 
-    
     @Benchmark
     public int standardHash8(BenchmarkState s) {
         char[] val = s.array;
         int len = val.length;
         int h = 0;
         int i = 0;
-        for (; i + 7< len; i+=8) {
-            h = 31 * 31 * 31 *  31 * 31 * 31 * 31 *  31 * h + 31 * 31 * 31 *  31 * 31 * 31 * 31 * val[i]  + 31 * 31 * 31 *  31 * 31 * 31 * val[i + 1] + 31 * 31 * 31 *  31 * 31 * val[i + 2] + 31 * 31 * 31 *  31 * val[i + 3] + 31 * 31 * 31 * val[i + 4]  + 31 * 31 * val[i + 5] + 31 * val[i + 6] + val[i + 7];
+        for (; i + 7 < len; i += 8) {
+            h = 31 * 31 * 31 * 31 * 31 * 31 * 31 * 31 * h + 31 * 31 * 31 * 31
+                    * 31 * 31 * 31 * val[i] + 31 * 31 * 31 * 31 * 31 * 31
+                    * val[i + 1] + 31 * 31 * 31 * 31 * 31 * val[i + 2] + 31
+                    * 31 * 31 * 31 * val[i + 3] + 31 * 31 * 31 * val[i + 4]
+                    + 31 * 31 * val[i + 5] + 31 * val[i + 6] + val[i + 7];
         }
 
-        for (; i + 3< len; i+=4) {
-            h = 31 * 31 * 31 *  31 * h + 31 * 31 * 31 * val[i]  + 31 * 31 * val[i + 1] + 31 * val[i + 2] + val[i + 3];
+        for (; i + 3 < len; i += 4) {
+            h = 31 * 31 * 31 * 31 * h + 31 * 31 * 31 * val[i] + 31 * 31
+                    * val[i + 1] + 31 * val[i + 2] + val[i + 3];
         }
         for (; i < len; i++) {
             h = 31 * h + val[i];
@@ -68,9 +73,6 @@ public class InterleavedHash {
 
     }
 
-    
-    
-    
     @State(Scope.Benchmark)
     public static class BenchmarkState {
 
@@ -78,7 +80,7 @@ public class InterleavedHash {
 
         public BenchmarkState() {
             array = new char[64];
-            for(int k = 0; k < array.length;++k)
+            for (int k = 0; k < array.length; ++k)
                 array[k] = (char) k;
 
         }
