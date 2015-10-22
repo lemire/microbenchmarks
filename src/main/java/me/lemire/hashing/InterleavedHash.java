@@ -30,13 +30,13 @@ public class InterleavedHash {
     }
 
     @Benchmark
-    public int standardHash2(BenchmarkState s) {
+    public int standardHash4(BenchmarkState s) {
         char[] val = s.array;
         int len = val.length;
         int h = 0;
         int i = 0;
-        for (; i + 1< len; i+=2) {
-            h = 31 * 31 * h + 31 * val[i] + val[i + 1];
+        for (; i + 3< len; i+=4) {
+            h = 31 * 31 * 31 *  31 * h + 31 * 31 * 31 * val[i]  + 31 * 31 * val[i + 1] + 31 * val[i + 2] + val[i + 3];
         }
         for (; i < len; i++) {
             h = 31 * h + val[i];
@@ -48,23 +48,28 @@ public class InterleavedHash {
 
     
     @Benchmark
-    public int interleavedHash(BenchmarkState s) {
+    public int standardHash8(BenchmarkState s) {
         char[] val = s.array;
         int len = val.length;
-        int h1 = 0;
-        int h2 = 0;
+        int h = 0;
         int i = 0;
-        for (; i + 1 < len; i += 2) {
-            h1 = 961 * h1 + val[i];
-            h2 = 961 * h2 + val[i + 1];
+        for (; i + 7< len; i+=8) {
+            h = 31 * 31 * 31 *  31 * 31 * 31 * 31 *  31 * h + 31 * 31 * 31 *  31 * 31 * 31 * 31 * val[i]  + 31 * 31 * 31 *  31 * 31 * 31 * val[i + 1] + 31 * 31 * 31 *  31 * 31 * val[i + 2] + 31 * 31 * 31 *  31 * val[i + 3] + 31 * 31 * 31 * val[i + 4]  + 31 * 31 * val[i + 5] + 31 * val[i + 6] + val[i + 7];
         }
-        int h = 31 * h1 + h2;
-        if (i < len) {
+
+        for (; i + 3< len; i+=4) {
+            h = 31 * 31 * 31 *  31 * h + 31 * 31 * 31 * val[i]  + 31 * 31 * val[i + 1] + 31 * val[i + 2] + val[i + 3];
+        }
+        for (; i < len; i++) {
             h = 31 * h + val[i];
         }
+
         return h;
 
     }
+
+    
+    
     
     @State(Scope.Benchmark)
     public static class BenchmarkState {
