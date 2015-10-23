@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class ShortBinarySearch {
-    @Param({ "1024" })
+    @Param({ "32", "256", "1024" })
     static int N;
     
     @Param({"5", "1000" })
