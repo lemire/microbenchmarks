@@ -22,6 +22,10 @@ import java.util.concurrent.TimeUnit;
 public class ShortBinarySearch {
     @Param({ "1024" })
     static int N;
+    
+    @Param({"5", "1000" })
+    static int howmanyarrays;
+    
 
     @State(Scope.Benchmark)
     public static class BenchmarkState {
@@ -30,7 +34,6 @@ public class ShortBinarySearch {
         short[] queries;
         Blackhole bh = new Blackhole();
         Random rand = new Random();
-        int howmanyarrays = 1000;
 
         public short nextQuery() {
             return (short) rand.nextInt();
@@ -122,6 +125,48 @@ public class ShortBinarySearch {
         return -(pos + 1);
     }
 
+    public static int unrolledUnsignedBinarySearch(final short[] array,
+            final short k) {
+        int ikey = toIntUnsigned(k);
+        int n = array.length;
+        int pos = 0;
+        while(n>=16) {
+            final int half = n >>> 1;
+            final int index = pos + half;
+            n-= half;
+            final int half2 = n>>>1; 
+            n -= half2;
+            final int val = array[index] & 0xFFFF;
+            final int index2 = pos + half + half2;
+            final int val2 = array[index2] & 0xFFFF;
+            final int index1 = pos +half2;
+            final int val1 = array[index1] & 0xFFFF;
+            if(ikey < val) {
+                if(ikey < val1) {
+                    // no change
+                } else {
+                    pos = index1;
+                }
+            } else {
+                if(ikey < val2)
+                    pos = index;
+                else 
+                    pos = index2;
+            }
+
+        }
+        int x = 0;
+        for(; x < n; ++x) {
+            final int val = toIntUnsigned(array[pos + x]);
+            if(val >= ikey) {
+                if(val == ikey) return pos;
+                break;
+            }
+        }
+        return -(pos + x + 1);
+    }
+
+    
     public static int toIntUnsigned(short x) {
         return x & 0xFFFF;
     }
@@ -144,12 +189,26 @@ public class ShortBinarySearch {
         return -(low + 1);
     }
 
+
+    @Benchmark
+    public void aaa_unrolledUnsignedBinarySearch(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+        for (int k = 0; k < l; ++k) {
+            for (int z = 0; z < howmanyarrays; ++z) {
+
+                bogus += unrolledUnsignedBinarySearch(s.array[z],
+                        s.queries[k]);
+            }
+        }
+        s.bh.consume(bogus);
+    }
     @Benchmark
     public void branchlessBinarySearch(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
         for (int k = 0; k < l; ++k) {
-            for (int z = 0; z < s.howmanyarrays; ++z) {
+            for (int z = 0; z < howmanyarrays; ++z) {
 
                 bogus += branchlessUnsignedBinarySearch(s.array[z],
                         s.queries[k]);
@@ -163,7 +222,7 @@ public class ShortBinarySearch {
         final int l = s.queries.length;
         int bogus = 0;
         for (int k = 0; k < l; ++k) {
-            for (int z = 0; z < s.howmanyarrays; ++z) {
+            for (int z = 0; z < howmanyarrays; ++z) {
                 bogus += unsignedBinarySearch(s.array[z], s.queries[k]);
             }
         }

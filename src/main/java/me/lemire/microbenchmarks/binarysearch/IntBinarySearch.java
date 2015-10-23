@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class IntBinarySearch {
     @Param ({
-        "10000000" 
+        "10000","10000000" 
     })
     static
     int N;
@@ -108,6 +108,45 @@ public class IntBinarySearch {
     }
     
 
+    public static int unrolledBinarySearch(final int[] array, final int ikey) {
+        int n = array.length;
+        if (n == 0) return 0;
+        int pos = 0;
+        while(n>=16) {
+            final int half = n >>> 1;
+            final int index = pos + half;
+            n-= half;
+            final int half2 = n>>>1; 
+            n -= half2;
+            final int val = array[index] ;
+            final int index2 = pos + half + half2;
+            final int val2 = array[index2];
+            final int index1 = pos +half2;
+            final int val1 = array[index1];
+            if(ikey < val) {
+                if(ikey < val1) {
+                    // no change
+                } else {
+                    pos = index1;
+                }
+            } else {
+                if(ikey < val2)
+                    pos = index;
+                else 
+                    pos = index2;
+            }
+        }
+        int x = 0;
+        for(; x < n; ++x) {
+            final int val = array[pos + x];
+            if(val >= ikey) {
+                if(val == ikey) return pos;
+                break;
+            }
+        }
+        return -(pos + x + 1);
+    }
+    
     
     
     
@@ -182,8 +221,19 @@ public class IntBinarySearch {
             bogus +=  Arrays.binarySearch(s.array, s.queries[k]); 
         }
         s.bh.consume(bogus);
-
     }
+    
+    @Benchmark
+    public void aaa_unrolledBinarySearch(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+        for(int k = 0; k < l; ++k) {
+            bogus +=  unrolledBinarySearch(s.array, s.queries[k]); 
+        }
+        s.bh.consume(bogus);
+    }
+    
+    
     
     public static void main(String[] args) throws RunnerException {
        Options opt = new OptionsBuilder()
