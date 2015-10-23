@@ -132,41 +132,44 @@ public class ShortBinarySearch {
         int pos = 0;
         // for large arrays that are in cache, unrolling could
         // issue too many wasteful random access queries
-        while(n>256) {
-            final int half = n >>> 1;
-            final int index = pos + half;
-            n-= half;
-            final int val = array[index] & 0xFFFF;
-            if(ikey > val) {
-                    pos = index;
-            }
-        }
-        // the sweet spot appears to be for moderately large 
-        // arrays where whether your array is in cache or not,
-        // it is faster.
         while(n>=16) {
             final int half = n >>> 1;
             final int index = pos + half;
             n-= half;
-            final int half2 = n>>>1; 
-            n -= half2;
             final int val = array[index] & 0xFFFF;
-            final int index2 = pos + half + half2;
-            final int val2 = array[index2] & 0xFFFF;
-            final int index1 = pos +half2;
-            final int val1 = array[index1] & 0xFFFF;
             if(ikey > val) {
-                if(ikey > val2)
-                    pos = index2;
-                else 
                     pos = index;
-            } else {
-                if(ikey > val1) {
-                    pos = index1;
-                } 
             }
         }
-        // we finish the job with a sequential search 
+       // we finish the job with a sequential search 
+        int x = 0;
+        for(; x < n; ++x) {
+            final int val = toIntUnsigned(array[pos + x]);
+            if(val >= ikey) {
+                if(val == ikey) return pos;
+                break;
+            }
+        }
+        return -(pos + x + 1);
+    }
+
+    public static int unrolledUnsignedBinarySearch2(final short[] array,
+            final short k) {
+        int ikey = toIntUnsigned(k);
+        int n = array.length;
+        int pos = 0;
+        // for large arrays that are in cache, unrolling could
+        // issue too many wasteful random access queries
+        while(n>=32) {
+            final int half = n >>> 1;
+            final int index = pos + half;
+            n-= half;
+            final int val = array[index] & 0xFFFF;
+            if(ikey > val) {
+                    pos = index;
+            }
+        }
+       // we finish the job with a sequential search 
         int x = 0;
         for(; x < n; ++x) {
             final int val = toIntUnsigned(array[pos + x]);
@@ -201,7 +204,20 @@ public class ShortBinarySearch {
         return -(low + 1);
     }
 
+    @Benchmark
+    public void aaa_unrolledUnsignedBinarySearch2(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+        for (int k = 0; k < l; ++k) {
+            for (int z = 0; z < howmanyarrays; ++z) {
 
+                bogus += unrolledUnsignedBinarySearch2(s.array[z],
+                        s.queries[k]);
+            }
+        }
+        s.bh.consume(bogus);
+    }
+ 
     @Benchmark
     public void aaa_unrolledUnsignedBinarySearch(BenchmarkState s) {
         final int l = s.queries.length;
@@ -215,7 +231,7 @@ public class ShortBinarySearch {
         }
         s.bh.consume(bogus);
     }
-    @Benchmark
+    //@Benchmark
     public void branchlessBinarySearch(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
