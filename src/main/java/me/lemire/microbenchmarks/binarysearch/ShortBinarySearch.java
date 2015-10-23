@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class ShortBinarySearch {
-    @Param({ "32", "256", "1024" })
+    @Param({ "32", "256", "512", "1024" })
     static int N;
     
     @Param({"5", "1000" })
@@ -130,6 +130,20 @@ public class ShortBinarySearch {
         int ikey = toIntUnsigned(k);
         int n = array.length;
         int pos = 0;
+        // for large arrays that are in cache, unrolling could
+        // issue too many wasteful random access queries
+        while(n>256) {
+            final int half = n >>> 1;
+            final int index = pos + half;
+            n-= half;
+            final int val = array[index] & 0xFFFF;
+            if(ikey > val) {
+                    pos = index;
+            }
+        }
+        // the sweet spot appears to be for moderately large 
+        // arrays where whether your array is in cache or not,
+        // it is faster.
         while(n>=16) {
             final int half = n >>> 1;
             final int index = pos + half;
@@ -141,20 +155,18 @@ public class ShortBinarySearch {
             final int val2 = array[index2] & 0xFFFF;
             final int index1 = pos +half2;
             final int val1 = array[index1] & 0xFFFF;
-            if(ikey < val) {
-                if(ikey < val1) {
-                    // no change
-                } else {
-                    pos = index1;
-                }
-            } else {
-                if(ikey < val2)
-                    pos = index;
-                else 
+            if(ikey > val) {
+                if(ikey > val2)
                     pos = index2;
+                else 
+                    pos = index;
+            } else {
+                if(ikey > val1) {
+                    pos = index1;
+                } 
             }
-
         }
+        // we finish the job with a sequential search 
         int x = 0;
         for(; x < n; ++x) {
             final int val = toIntUnsigned(array[pos + x]);
