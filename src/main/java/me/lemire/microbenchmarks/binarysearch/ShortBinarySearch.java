@@ -184,7 +184,7 @@ public class ShortBinarySearch {
     }
 
     
-    
+    // this appears to be all-around winner
     public static int unrolledUnsignedBinarySearch32(final short[] array,
             final short k) {
         int ikey = toIntUnsigned(k);
@@ -366,7 +366,8 @@ public class ShortBinarySearch {
         }
         s.bh.consume(bogus);
     }
-    //@Benchmark
+    
+    @Benchmark
     public void branchlessBinarySearch(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;

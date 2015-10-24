@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class IntBinarySearch {
     @Param ({
-        "10000","10000000" 
+        "1000000" 
     })
     static
     int N;
@@ -108,43 +108,29 @@ public class IntBinarySearch {
     }
     
 
-    public static int unrolledBinarySearch(final int[] array, final int ikey) {
-        int n = array.length;
-        if (n == 0) return 0;
-        int pos = 0;
-        while(n>=16) {
-            final int half = n >>> 1;
-            final int index = pos + half;
-            n-= half;
-            final int half2 = n>>>1; 
-            n -= half2;
-            final int val = array[index] ;
-            final int index2 = pos + half + half2;
-            final int val2 = array[index2];
-            final int index1 = pos +half2;
-            final int val1 = array[index1];
-            if(ikey < val) {
-                if(ikey < val1) {
-                    // no change
-                } else {
-                    pos = index1;
-                }
-            } else {
-                if(ikey < val2)
-                    pos = index;
-                else 
-                    pos = index2;
-            }
+    public static int hybridBinarySearch(final int[] array, final int ikey, int gap) {
+        int low = 0;
+        int high = array.length - 1;
+        // 16 32-bit integers fit in a cache line
+        while (low + gap <= high) {
+            final int middleIndex = (low + high) >>> 1;
+            final int middleValue = array[middleIndex];
+
+            if (middleValue < ikey)
+                low = middleIndex + 1;
+            else if (middleValue > ikey)
+                high = middleIndex - 1;
+            else
+                return middleIndex;
         }
-        int x = 0;
-        for(; x < n; ++x) {
-            final int val = array[pos + x];
+        for(; low <= high; ++low) {
+            final int val = array[low];
             if(val >= ikey) {
-                if(val == ikey) return pos;
+                if(val == ikey) return low;
                 break;
             }
         }
-        return -(pos + x + 1);
+        return -(low + 1);
     }
     
     
@@ -191,7 +177,6 @@ public class IntBinarySearch {
     }
 
 
-    @Benchmark
     public void branchlessBinarySearch(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
@@ -224,16 +209,60 @@ public class IntBinarySearch {
     }
     
     @Benchmark
-    public void aaa_unrolledBinarySearch(BenchmarkState s) {
+    public void aaa_hybridBinarySearch0(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
         for(int k = 0; k < l; ++k) {
-            bogus +=  unrolledBinarySearch(s.array, s.queries[k]); 
+            bogus +=  hybridBinarySearch(s.array, s.queries[k],0); 
         }
         s.bh.consume(bogus);
     }
     
-    
+    @Benchmark
+    public void aaa_hybridBinarySearch4(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+        for(int k = 0; k < l; ++k) {
+            bogus +=  hybridBinarySearch(s.array, s.queries[k],4); 
+        }
+        s.bh.consume(bogus);
+    }
+    @Benchmark
+    public void aaa_hybridBinarySearch8(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+        for(int k = 0; k < l; ++k) {
+            bogus +=  hybridBinarySearch(s.array, s.queries[k],8); 
+        }
+        s.bh.consume(bogus);
+    }
+    @Benchmark
+    public void aaa_hybridBinarySearch16(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+        for(int k = 0; k < l; ++k) {
+            bogus +=  hybridBinarySearch(s.array, s.queries[k],16); 
+        }
+        s.bh.consume(bogus);
+    }
+    @Benchmark
+    public void aaa_hybridBinarySearch32(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+        for(int k = 0; k < l; ++k) {
+            bogus +=  hybridBinarySearch(s.array, s.queries[k],32); 
+        }
+        s.bh.consume(bogus);
+    }
+    @Benchmark
+    public void aaa_hybridBinarySearch64(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+        for(int k = 0; k < l; ++k) {
+            bogus +=  hybridBinarySearch(s.array, s.queries[k],64); 
+        }
+        s.bh.consume(bogus);
+    }
     
     public static void main(String[] args) throws RunnerException {
        Options opt = new OptionsBuilder()
