@@ -126,7 +126,7 @@ public class ShortBinarySearch {
         return -(pos + 1);
     }
 
-    public static int unrolledUnsignedBinarySearch(final short[] array,
+    public static int hybridUnsignedBinarySearch(final short[] array,
             final short k) {
         int ikey = toIntUnsigned(k);
         int n = array.length;
@@ -155,7 +155,7 @@ public class ShortBinarySearch {
     }
 
     
-    public static int unrolledUnsignedBinarySearch64(final short[] array,
+    public static int hybridUnsignedBinarySearch64(final short[] array,
             final short k) {
         int ikey = toIntUnsigned(k);
         int low = 0;
@@ -185,7 +185,7 @@ public class ShortBinarySearch {
 
     
     // this appears to be all-around winner
-    public static int unrolledUnsignedBinarySearch32(final short[] array,
+    public static int hybridUnsignedBinarySearch32(final short[] array,
             final short k) {
         int ikey = toIntUnsigned(k);
         int low = 0;
@@ -215,7 +215,7 @@ public class ShortBinarySearch {
 
     
     
-    public static int unrolledUnsignedBinarySearch16(final short[] array,
+    public static int hybridUnsignedBinarySearch16(final short[] array,
             final short k) {
         int ikey = toIntUnsigned(k);
         int low = 0;
@@ -243,7 +243,7 @@ public class ShortBinarySearch {
         return -(x + 1);
     }
 
-    public static int unrolledUnsignedBinarySearch8(final short[] array,
+    public static int hybridUnsignedBinarySearch8(final short[] array,
             final short k) {
         int ikey = toIntUnsigned(k);
         int low = 0;
@@ -297,13 +297,13 @@ public class ShortBinarySearch {
     }
 
     @Benchmark
-    public void aaa_unrolledUnsignedBinarySearch8(BenchmarkState s) {
+    public void aaa_hybridUnsignedBinarySearch8(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
         for (int k = 0; k < l; ++k) {
             for (int z = 0; z < howmanyarrays; ++z) {
 
-                bogus += unrolledUnsignedBinarySearch8(s.array[z],
+                bogus += hybridUnsignedBinarySearch8(s.array[z],
                         s.queries[k]);
             }
         }
@@ -312,13 +312,13 @@ public class ShortBinarySearch {
 
     
     @Benchmark
-    public void aaa_unrolledUnsignedBinarySearch16(BenchmarkState s) {
+    public void aaa_hybridUnsignedBinarySearch16(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
         for (int k = 0; k < l; ++k) {
             for (int z = 0; z < howmanyarrays; ++z) {
 
-                bogus += unrolledUnsignedBinarySearch16(s.array[z],
+                bogus += hybridUnsignedBinarySearch16(s.array[z],
                         s.queries[k]);
             }
         }
@@ -326,13 +326,13 @@ public class ShortBinarySearch {
     }
     
     @Benchmark
-    public void aaa_unrolledUnsignedBinarySearch32(BenchmarkState s) {
+    public void aaa_hybridUnsignedBinarySearch32(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
         for (int k = 0; k < l; ++k) {
             for (int z = 0; z < howmanyarrays; ++z) {
 
-                bogus += unrolledUnsignedBinarySearch32(s.array[z],
+                bogus += hybridUnsignedBinarySearch32(s.array[z],
                         s.queries[k]);
             }
         }
@@ -340,13 +340,13 @@ public class ShortBinarySearch {
     }
     
     @Benchmark
-    public void aaa_unrolledUnsignedBinarySearch64(BenchmarkState s) {
+    public void aaa_hybridUnsignedBinarySearch64(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
         for (int k = 0; k < l; ++k) {
             for (int z = 0; z < howmanyarrays; ++z) {
 
-                bogus += unrolledUnsignedBinarySearch64(s.array[z],
+                bogus += hybridUnsignedBinarySearch64(s.array[z],
                         s.queries[k]);
             }
         }
@@ -354,13 +354,13 @@ public class ShortBinarySearch {
     }
     
     @Benchmark
-    public void aaa_unrolledUnsignedBinarySearch(BenchmarkState s) {
+    public void aaa_hybridUnsignedBinarySearch(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
         for (int k = 0; k < l; ++k) {
             for (int z = 0; z < howmanyarrays; ++z) {
 
-                bogus += unrolledUnsignedBinarySearch(s.array[z],
+                bogus += hybridUnsignedBinarySearch(s.array[z],
                         s.queries[k]);
             }
         }

@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class IntBinarySearch {
     @Param ({
-        "1000000" 
+        "2048","1000000" 
     })
     static
     int N;
