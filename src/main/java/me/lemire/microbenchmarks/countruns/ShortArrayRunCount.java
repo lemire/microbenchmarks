@@ -20,12 +20,14 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class ShortArrayRunCount {
-    @Param({ "1024"})
+    @Param({ "1024" })
     static int N;
-    
-    @Param({"5" })
+
+    @Param({ "5" })
     static int howmanyarrays;
     
+    @Param({ "true", "false" })
+    static boolean onerun;
 
     @State(Scope.Benchmark)
     public static class BenchmarkState {
@@ -40,83 +42,111 @@ public class ShortArrayRunCount {
 
         public BenchmarkState() {
             array = new short[howmanyarrays][N];
-            System.out.println("*** Array memory usage is at least "+((N*howmanyarrays*2)/1024)+"Kb");
+            System.out.println("one run mode  :"+onerun);
+            System.out.println("*** Array memory usage is at least "
+                    + ((N * howmanyarrays * 2) / 1024) + "Kb");
 
             for (int z = 0; z < howmanyarrays; ++z) {
                 final short[] arr = array[z];
+                if (onerun) {
+                    for (int k = 0; k < z; ++k)
+                        arr[k] = (short) k;
+                } else {
 
-                for (int k = 0; k < N; ++k)
-                    arr[k] = (short) rand.nextInt();
-                List<Short> wrapper = new AbstractList<Short>() {
+                    for (int k = 0; k < N; ++k)
+                        arr[k] = (short) rand.nextInt();
+                    List<Short> wrapper = new AbstractList<Short>() {
 
-                    @Override
-                    public Short get(int index) {
-                        return arr[index];
+                        @Override
+                        public Short get(int index) {
+                            return arr[index];
+                        }
+
+                        @Override
+                        public Short set(int index, Short element) {
+                            short v = arr[index];
+                            arr[index] = element;
+                            return v;
+                        }
+
+                        @Override
+                        public int size() {
+                            return arr.length;
+                        }
+
+                    };
+                    Collections.sort(wrapper, new Comparator<Short>() {
+
+                        @Override
+                        public int compare(Short o1, Short o2) {
+                            return (o1.shortValue() & 0xFFFF)
+                                    - (o2.shortValue() & 0xFFFF);
+                        }
+                    });
+                    // check that it is actually sorted!
+                    for (int k = 1; k < arr.length; ++k) {
+                        if ((arr[k] & 0xFFFF) < (arr[k - 1] & 0xFFFF))
+                            throw new RuntimeException("bug");
                     }
-
-                    @Override
-                    public Short set(int index, Short element) {
-                        short v = arr[index];
-                        arr[index] = element;
-                        return v;
-                    }
-
-                    @Override
-                    public int size() {
-                        return arr.length;
-                    }
-
-                };
-                Collections.sort(wrapper, new Comparator<Short>() {
-
-                    @Override
-                    public int compare(Short o1, Short o2) {
-                        return (o1.shortValue() & 0xFFFF)
-                                - (o2.shortValue() & 0xFFFF);
-                    }
-                });
-                // check that it is actually sorted!
-                for (int k = 1; k < arr.length; ++k) {
-                    if ((arr[k] & 0xFFFF) < (arr[k - 1] & 0xFFFF))
-                        throw new RuntimeException("bug");
                 }
             }
 
         }
 
     }
-    
 
     public static int countRun(final short[] array, int cardinality) {
         int numRuns = 1;
         for (int i = 0; i < cardinality - 1; i++) {
-            // this way of doing the computation maximizes superscalar opportunities, can even vectorize!
-            if(toIntUnsigned(array[i]) + 1 != toIntUnsigned(array[i+1])) ++numRuns;
+            // this way of doing the computation maximizes superscalar
+            // opportunities, can even vectorize!
+            if (toIntUnsigned(array[i]) + 1 != toIntUnsigned(array[i + 1]))
+                ++numRuns;
         }
         return numRuns;
     }
-    
+
+    public static int unrolledCountRun(final short[] array, int cardinality) {
+        int numRuns = 1;
+        int i = 0;
+        for (; i + 3 < cardinality - 1; i += 4) {
+            if (toIntUnsigned(array[i]) + 1 != toIntUnsigned(array[i + 1]))
+                ++numRuns;
+            if (toIntUnsigned(array[i + 1]) + 1 != toIntUnsigned(array[i + 2]))
+                ++numRuns;
+            if (toIntUnsigned(array[i + 2]) + 1 != toIntUnsigned(array[i + 3]))
+                ++numRuns;
+            if (toIntUnsigned(array[i + 3]) + 1 != toIntUnsigned(array[i + 4]))
+                ++numRuns;
+        }
+        for (; i < cardinality - 1; i++) {
+            // this way of doing the computation maximizes superscalar
+            // opportunities, can even vectorize!
+            if (toIntUnsigned(array[i]) + 1 != toIntUnsigned(array[i + 1]))
+                ++numRuns;
+        }
+        return numRuns;
+    }
 
     public static int simplerCountRun(final short[] array, int cardinality) {
         int numRuns = 1;
         for (int i = 0; i < cardinality - 1; i++) {
-            // this way of doing the computation maximizes superscalar opportunities, can even vectorize!
-            if(array[i] + 1 != array[i+1]) ++numRuns;
+            // this way of doing the computation maximizes superscalar
+            // opportunities, can even vectorize!
+            if (array[i] + 1 != array[i + 1])
+                ++numRuns;
         }
         return numRuns;
     }
+
     public static int branchlessCountRun(final short[] array, int cardinality) {
         int numRuns = 1;
         for (int i = 0; i < cardinality - 1; i++) {
-            numRuns += (toIntUnsigned(array[i]) + 1 - toIntUnsigned(array[i+1]))>>>31;
+            numRuns += (toIntUnsigned(array[i]) + 1 - toIntUnsigned(array[i + 1])) >>> 31;
         }
         return numRuns;
     }
 
-
-    
-    
-    
     public static int toIntUnsigned(short x) {
         return x & 0xFFFF;
     }
@@ -124,36 +154,43 @@ public class ShortArrayRunCount {
     @Benchmark
     public void simplerCountRun(BenchmarkState s) {
         int bogus = 0;
-            for (int z = 0; z < howmanyarrays; ++z) {
+        for (int z = 0; z < howmanyarrays; ++z) {
 
-                bogus += simplerCountRun(s.array[z],
-                        s.array[z].length);
-            }
+            bogus += simplerCountRun(s.array[z], s.array[z].length);
+        }
         s.bh.consume(bogus);
     }
-    
+
+    @Benchmark
+    public void unrolledCountRun(BenchmarkState s) {
+        int bogus = 0;
+        for (int z = 0; z < howmanyarrays; ++z) {
+
+            bogus += unrolledCountRun(s.array[z], s.array[z].length);
+        }
+        s.bh.consume(bogus);
+    }
+
     @Benchmark
     public void countRun(BenchmarkState s) {
         int bogus = 0;
-            for (int z = 0; z < howmanyarrays; ++z) {
+        for (int z = 0; z < howmanyarrays; ++z) {
 
-                bogus += countRun(s.array[z],
-                        s.array[z].length);
-            }
+            bogus += countRun(s.array[z], s.array[z].length);
+        }
         s.bh.consume(bogus);
     }
-    
+
     @Benchmark
     public void branchlessCountRun(BenchmarkState s) {
         int bogus = 0;
-            for (int z = 0; z < howmanyarrays; ++z) {
+        for (int z = 0; z < howmanyarrays; ++z) {
 
-                bogus += branchlessCountRun(s.array[z],
-                        s.array[z].length);
-            }
+            bogus += branchlessCountRun(s.array[z], s.array[z].length);
+        }
         s.bh.consume(bogus);
     }
-    
+
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(ShortArrayRunCount.class.getSimpleName())
