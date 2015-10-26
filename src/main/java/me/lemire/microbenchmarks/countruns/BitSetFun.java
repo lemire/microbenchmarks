@@ -108,6 +108,22 @@ public class BitSetFun {
         return cardinality;
     }
 
+    
+
+    public static int branchlessModifyAndCard2(final short[] array,
+            final long[] bitmap) {
+        int card = array.length;
+        long[] bit = Arrays.copyOf(bitmap, bitmap.length);
+        int cardinality = 0;
+        for (int k = 0; k < card; ++k) {
+            final int i = toIntUnsigned(array[k]) >>> 6;
+            long w = bit[i];
+            long aft = bit[i] | (1l << array[k]);
+            cardinality += (aft - w) >>> 31;
+            bit[i] = bit[i] | (1l << array[k]);
+        }
+        return cardinality;
+    }
     public static int branchymodifyAndCard(final short[] array,
             final long[] bitmap) {
         int card = array.length;
@@ -136,7 +152,15 @@ public class BitSetFun {
         }
         s.bh.consume(bogus);
     }
+    @Benchmark
+    public void branchlessModifyAndCard2(BenchmarkState s) {
+        int bogus = 0;
+        for (int z = 0; z < howmanyarrays; ++z) {
 
+            bogus += branchlessModifyAndCard2(s.array[z], s.bitmap[z]);
+        }
+        s.bh.consume(bogus);
+    }
     @Benchmark
     public void branchymodifyAndCard(BenchmarkState s) {
         int bogus = 0;
