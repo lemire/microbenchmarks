@@ -119,7 +119,7 @@ public class BitSetFun {
             final int i = toIntUnsigned(array[k]) >>> 6;
             long w = bit[i];
             long aft = bit[i] | (1l << array[k]);
-            cardinality += (aft - w) >>> 31;
+            cardinality += (w - aft) >>> 63;
             bit[i] = bit[i] | (1l << array[k]);
         }
         return cardinality;
