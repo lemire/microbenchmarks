@@ -178,6 +178,17 @@ public class ShortArrayRunCount {
         }
         return numRuns;
     }
+    
+    public static int simplerBranchlessCountRun3(final short[] array, int cardinality) {
+        int numRuns = 1;
+        int oldv = (short) (array[0] + 1);
+        for (int i = 1; i < cardinality; i++) {
+            short newv = array[i];
+            numRuns += (oldv !=newv) ? 1:0;
+            oldv = newv + 1;
+        }
+        return numRuns;
+    }
 
     public static int toIntUnsigned(short x) {
         return x & 0xFFFF;
@@ -250,6 +261,17 @@ public class ShortArrayRunCount {
         }
         s.bh.consume(bogus);
     }
+
+    @Benchmark
+    public void simplerBranchlessCountRun3(BenchmarkState s) {
+        int bogus = 0;
+        for (int z = 0; z < howmanyarrays; ++z) {
+
+            bogus += simplerBranchlessCountRun3(s.array[z], s.array[z].length);
+        }
+        s.bh.consume(bogus);
+    }
+
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(ShortArrayRunCount.class.getSimpleName())
