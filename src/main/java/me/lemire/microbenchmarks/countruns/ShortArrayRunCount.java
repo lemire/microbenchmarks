@@ -26,7 +26,7 @@ public class ShortArrayRunCount {
     @Param({ "5" })
     static int howmanyarrays;
     
-    @Param({ "true", "false" })
+    @Param({ "false" })
     static boolean onerun;
 
     @State(Scope.Benchmark)
@@ -138,6 +138,20 @@ public class ShortArrayRunCount {
         }
         return numRuns;
     }
+    
+    public static int simplerCountRun2(final short[] array, int cardinality) {
+        int numRuns = 1;
+        short oldv = array[0];
+        for (int i = 0; i < cardinality - 1; i++) {
+            short newv = array[i + 1];
+            // this way of doing the computation maximizes superscalar
+            // opportunities, can even vectorize!
+            if (oldv + 1 != newv)
+                ++numRuns;
+            oldv = newv;
+        }
+        return numRuns;
+    }
 
     public static int branchlessCountRun(final short[] array, int cardinality) {
         int numRuns = 1;
@@ -178,7 +192,17 @@ public class ShortArrayRunCount {
         }
         s.bh.consume(bogus);
     }
+    @Benchmark
+    public void simplerCountRun2(BenchmarkState s) {
+        int bogus = 0;
+        for (int z = 0; z < howmanyarrays; ++z) {
 
+            bogus += simplerCountRun2(s.array[z], s.array[z].length);
+        }
+        s.bh.consume(bogus);
+    }
+
+    
     @Benchmark
     public void unrolledCountRun(BenchmarkState s) {
         int bogus = 0;
