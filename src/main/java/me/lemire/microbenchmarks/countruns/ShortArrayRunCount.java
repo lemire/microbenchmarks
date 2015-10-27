@@ -147,6 +147,24 @@ public class ShortArrayRunCount {
         return numRuns;
     }
 
+    public static int simplerBranchlessCountRun(final short[] array, int cardinality) {
+        int numRuns = 1;
+        for (int i = 0; i < cardinality - 1; i++) {
+            numRuns += (array[i] + 1 - array[i + 1]) >>> 31;
+        }
+        return numRuns;
+    }
+    public static int simplerBranchlessCountRun2(final short[] array, int cardinality) {
+        int numRuns = 1;
+        short oldv = array[0];
+        for (int i = 0; i < cardinality - 1; i++) {
+            short newv = array[i + 1];
+            numRuns += (oldv + 1 - newv) >>> 31;
+            oldv = newv;
+        }
+        return numRuns;
+    }
+
     public static int toIntUnsigned(short x) {
         return x & 0xFFFF;
     }
@@ -190,7 +208,24 @@ public class ShortArrayRunCount {
         }
         s.bh.consume(bogus);
     }
+    @Benchmark
+    public void simplerBranchlessCountRun(BenchmarkState s) {
+        int bogus = 0;
+        for (int z = 0; z < howmanyarrays; ++z) {
 
+            bogus += simplerBranchlessCountRun(s.array[z], s.array[z].length);
+        }
+        s.bh.consume(bogus);
+    }
+    @Benchmark
+    public void simplerBranchlessCountRun2(BenchmarkState s) {
+        int bogus = 0;
+        for (int z = 0; z < howmanyarrays; ++z) {
+
+            bogus += simplerBranchlessCountRun2(s.array[z], s.array[z].length);
+        }
+        s.bh.consume(bogus);
+    }
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(ShortArrayRunCount.class.getSimpleName())
