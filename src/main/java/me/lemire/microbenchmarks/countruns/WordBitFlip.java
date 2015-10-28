@@ -1,5 +1,8 @@
 package me.lemire.microbenchmarks.countruns;
 
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Mode;
@@ -13,21 +16,17 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class BitmapOR {
+public class WordBitFlip {
     @Param({ "1024" })
     static int N;
 
     @Param({ "5" })
     static int howmanyarrays;
 
-    @Param({ "false" })
-    static boolean onerun;
 
     @State(Scope.Benchmark)
     public static class BenchmarkState {
@@ -46,7 +45,6 @@ public class BitmapOR {
         public BenchmarkState() {
             bitmap2 = new long[howmanyarrays][(1 << 16) / 64];
             bitmap = new long[howmanyarrays][(1 << 16) / 64];
-            System.out.println("one run mode  :" + onerun);
             System.out.println("*** Array memory usage is at least "
                     + ((N * howmanyarrays * 2) / 1024) + "Kb");
 
@@ -61,53 +59,41 @@ public class BitmapOR {
 
         }
     }
-    public static void justClone(final long[] bitmap1, final long[] bitmap2, final long[] out) {
-        System.arraycopy(bitmap1, 0, out, 0, bitmap1.length);
-    }
-    public static void justOr(final long[] bitmap1, final long[] bitmap2, final long[] out) {
-        for (int i = 0; i < bitmap1.length; i++) {
-            out[i] = bitmap1[i] | bitmap2[i];
-        }
-    }
-    public static int orCard(final long[] bitmap1, final long[] bitmap2, final long[] out) {
-        int card = 0;
-        for (int i = 0; i < bitmap1.length; i++) {
-            long w1 = bitmap1[i];
-            long w2 = bitmap2[i];
-            long a =  w1 | w2;
-            out[i] = a;
-            card += Long.bitCount(a);
-        }
-        return card;
-    }
+    
+
     @Benchmark
-    public void justClone(BenchmarkState s) {
+    public int simpleFlip(BenchmarkState s) {
+        int bogus = 0;
         for (int z = 0; z < howmanyarrays; ++z) {
-            justClone(s.bitmap[z],s.bitmap2[z],s.buffer);
+            long[] b = s.bitmap[z];
+            for(int i = 0; i < N; ++i) {
+                long curWord = b[i];
+                int localRunStart = Long.numberOfTrailingZeros(curWord);
+                s.buffer[i] =  curWord | ((1L << localRunStart) - 1);
+                bogus += localRunStart;
+            }
         }
-    }
-        
-    @Benchmark
-    public void justOr(BenchmarkState s) {
-        for (int z = 0; z < howmanyarrays; ++z) {
-            justOr(s.bitmap[z],s.bitmap2[z],s.buffer);
-        }
+        return bogus;
     }
     
     @Benchmark
-    public int orCard(BenchmarkState s) {
+    public int simpleFlip2(BenchmarkState s) {
         int bogus = 0;
         for (int z = 0; z < howmanyarrays; ++z) {
-            bogus += orCard(s.bitmap[z],s.bitmap2[z],s.buffer);
+            long[] b = s.bitmap[z];
+            for(int i = 0; i < N; ++i) {
+                long curWord = b[i];
+                int localRunStart = Long.numberOfTrailingZeros(curWord);
+                s.buffer[i] = curWord | (curWord-1);
+                bogus += localRunStart;
+            }
         }
         return bogus;
     }
 
-
-
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(BitmapOR.class.getSimpleName())
+                .include(WordBitFlip.class.getSimpleName())
                 .warmupIterations(3).measurementIterations(5).forks(1).build();
 
         new Runner(opt).run();
