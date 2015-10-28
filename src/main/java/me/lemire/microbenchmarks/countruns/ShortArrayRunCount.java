@@ -127,7 +127,7 @@ public class ShortArrayRunCount {
         }
         return numRuns;
     }
-
+    
     public static int simplerCountRun(final short[] array, int cardinality) {
         int numRuns = 1;
         for (int i = 0; i < cardinality - 1; i++) {
