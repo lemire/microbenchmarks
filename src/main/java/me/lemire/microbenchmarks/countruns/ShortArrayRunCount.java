@@ -128,22 +128,12 @@ public class ShortArrayRunCount {
         return numRuns;
     }
     
+        
     public static int simplerCountRun(final short[] array, int cardinality) {
         int numRuns = 1;
-        for (int i = 0; i < cardinality - 1; i++) {
-            // this way of doing the computation maximizes superscalar
-            // opportunities, can even vectorize!
-            if (array[i] + 1 != array[i + 1])
-                ++numRuns;
-        }
-        return numRuns;
-    }
-    
-    public static int simplerCountRun2(final short[] array, int cardinality) {
-        int numRuns = 1;
-        short oldv = array[0];
-        for (int i = 0; i < cardinality - 1; i++) {
-            short newv = array[i + 1];
+        int oldv = array[0]&0xFFFF;
+        for (int i = 1; i < cardinality ; i++) {
+            int newv = array[i] &0xFFFF;
             // this way of doing the computation maximizes superscalar
             // opportunities, can even vectorize!
             if (oldv + 1 != newv)
@@ -152,7 +142,19 @@ public class ShortArrayRunCount {
         }
         return numRuns;
     }
-
+    public static int simplerCountRun2(final short[] array, int cardinality) {
+        int numRuns = 1;
+        int oldv = array[0]&0xFFFF;
+        for (int i = 1; (i < cardinality) && (numRuns<=2047) ; i++) {
+            int newv = array[i] &0xFFFF;
+            // this way of doing the computation maximizes superscalar
+            // opportunities, can even vectorize!
+            if (oldv + 1 != newv)
+                ++numRuns;
+            oldv = newv;
+        }
+        return numRuns;
+    }
     public static int branchlessCountRun(final short[] array, int cardinality) {
         int numRuns = 1;
         for (int i = 0; i < cardinality - 1; i++) {
@@ -161,18 +163,11 @@ public class ShortArrayRunCount {
         return numRuns;
     }
 
-    public static int simplerBranchlessCountRun(final short[] array, int cardinality) {
-        int numRuns = 1;
-        for (int i = 0; i < cardinality - 1; i++) {
-            numRuns += (array[i] + 1 - array[i + 1]) >>> 31;
-        }
-        return numRuns;
-    }
     public static int simplerBranchlessCountRun2(final short[] array, int cardinality) {
         int numRuns = 1;
-        short oldv = array[0];
+        int oldv = array[0] & 0xFFFF;
         for (int i = 0; i < cardinality - 1; i++) {
-            short newv = array[i + 1];
+            int newv = array[i + 1] & 0xFFFF;
             numRuns += (oldv + 1 - newv) >>> 31;
             oldv = newv;
         }
@@ -181,9 +176,9 @@ public class ShortArrayRunCount {
     
     public static int simplerBranchlessCountRun3(final short[] array, int cardinality) {
         int numRuns = 1;
-        int oldv = (short) (array[0] + 1);
+        int oldv = (array[0] + 1) & 0xFFFF;
         for (int i = 1; i < cardinality; i++) {
-            short newv = array[i];
+            int newv = array[i] & 0xFFFF;
             numRuns += (oldv !=newv) ? 1:0;
             oldv = newv + 1;
         }
@@ -243,15 +238,7 @@ public class ShortArrayRunCount {
         }
         s.bh.consume(bogus);
     }
-    @Benchmark
-    public void simplerBranchlessCountRun(BenchmarkState s) {
-        int bogus = 0;
-        for (int z = 0; z < howmanyarrays; ++z) {
-
-            bogus += simplerBranchlessCountRun(s.array[z], s.array[z].length);
-        }
-        s.bh.consume(bogus);
-    }
+    
     @Benchmark
     public void simplerBranchlessCountRun2(BenchmarkState s) {
         int bogus = 0;
