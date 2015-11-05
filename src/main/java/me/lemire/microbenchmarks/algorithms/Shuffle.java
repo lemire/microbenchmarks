@@ -48,18 +48,14 @@ public class Shuffle {
     }
 
     public static void fast_shuffle(Object arr[], MersenneTwisterFast rnd) {
-        int i;
-        int size = arr.length;
+        final int size = arr.length;
         int m2 = fastround2(size);
         int bused = fastlog2(size);
-        i = size;
+        int i = size;
         while (i > 1) {
             for (; 2 * i >= m2; i--) {
-                int nextpos = fastFairRandomInt(i, m2 - 1, bused, rnd);//
-                Object tmp = arr[i - 1];// likely in cache
-                Object val = arr[nextpos]; // could be costly
-                arr[i - 1] = val;
-                arr[nextpos] = tmp; // you might have to read this store later
+                final int nextpos = fastFairRandomInt(i, m2 - 1, bused, rnd);
+                swap(arr, i - 1, nextpos);
             }
             m2 = m2 / 2;
             bused--;
@@ -74,11 +70,11 @@ public class Shuffle {
 
     public static void shuffle(Object arr[], Random rnd) {
         int size = arr.length;
-
         // Shuffle array
         for (int i = size; i > 1; i--)
             swap(arr, i - 1, rnd.nextInt(i));
     }
+    
     public static void shuffle(Object arr[], MersenneTwisterFast rnd) {
         int size = arr.length;
 
