@@ -42,7 +42,7 @@ public class Shuffle {
    public static void fast_shuffle(int arr[], MersenneTwisterFast rnd) {
         final int size = arr.length;
         int bused = 32 - Integer.numberOfLeadingZeros(size);
-        int m2 = 1 << Integer.numberOfLeadingZeros(size-1);
+        int m2 = 1 << (32 - Integer.numberOfLeadingZeros(size-1));
         int i = size;
         while (i > 1) {
             for (; 2 * i >= m2; i--) {
