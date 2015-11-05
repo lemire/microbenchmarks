@@ -17,7 +17,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 @State(Scope.Thread)
 @BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.SECONDS)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
 public class Shuffle {
 
     static int fastFairRandomInt(int size, int mask, int bused, MersenneTwisterFast r) {
@@ -32,24 +32,17 @@ public class Shuffle {
               rkey >>= bused;
             } else {
               rkey = r.nextInt();
+              budget = 31;
             }
             candidate = rkey & mask;
         } 
         return candidate;
     }
 
-    static int fastlog2(int n) {
-        return 32 - Integer.numberOfLeadingZeros(n - 1);
-    }
-
-    static int fastround2(int v) {
-        return 1 << (32 - Integer.numberOfLeadingZeros(v - 1));
-    }
-
-    public static void fast_shuffle(int arr[], MersenneTwisterFast rnd) {
+   public static void fast_shuffle(int arr[], MersenneTwisterFast rnd) {
         final int size = arr.length;
-        int m2 = fastround2(size);
-        int bused = fastlog2(size);
+        int bused = 32 - Integer.numberOfLeadingZeros(size);
+        int m2 = 1 << Integer.numberOfLeadingZeros(size-1);
         int i = size;
         while (i > 1) {
             for (; 2 * i >= m2; i--) {
@@ -60,7 +53,6 @@ public class Shuffle {
             bused--;
         }
     }
-
     private static void swap(int[] arr, int i, int j) {
         int tmp = arr[i];
         arr[i] = arr[j];
@@ -84,7 +76,7 @@ public class Shuffle {
 
     @State(Scope.Benchmark)
     public static class BenchmarkState {
-        int N = 16777216;
+        int N = 2048;//16777216;
         int[] array = new int[N];
 
         public BenchmarkState() {
