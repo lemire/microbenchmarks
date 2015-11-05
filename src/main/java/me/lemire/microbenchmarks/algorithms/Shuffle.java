@@ -26,7 +26,6 @@ public class Shuffle {
         budget = 31;// assume that this is what we have
         rkey = r.nextInt();
         candidate = rkey & mask;
-
         while (candidate >= size) {
             budget -= bused;// we wasted bused bits
             if(budget >=  bused)  {
@@ -47,7 +46,7 @@ public class Shuffle {
         return 1 << (32 - Integer.numberOfLeadingZeros(v - 1));
     }
 
-    public static void fast_shuffle(Object arr[], MersenneTwisterFast rnd) {
+    public static void fast_shuffle(int arr[], MersenneTwisterFast rnd) {
         final int size = arr.length;
         int m2 = fastround2(size);
         int bused = fastlog2(size);
@@ -62,20 +61,20 @@ public class Shuffle {
         }
     }
 
-    private static void swap(Object[] arr, int i, int j) {
-        Object tmp = arr[i];
+    private static void swap(int[] arr, int i, int j) {
+        int tmp = arr[i];
         arr[i] = arr[j];
         arr[j] = tmp;
     }
 
-    public static void shuffle(Object arr[], Random rnd) {
+    public static void shuffle(int arr[], Random rnd) {
         int size = arr.length;
         // Shuffle array
         for (int i = size; i > 1; i--)
             swap(arr, i - 1, rnd.nextInt(i));
     }
     
-    public static void shuffle(Object arr[], MersenneTwisterFast rnd) {
+    public static void shuffle(int arr[], MersenneTwisterFast rnd) {
         int size = arr.length;
 
         // Shuffle array
@@ -85,12 +84,12 @@ public class Shuffle {
 
     @State(Scope.Benchmark)
     public static class BenchmarkState {
-        int N = 16777216/32;
-        Integer[] array = new Integer[N];
+        int N = 16777216;
+        int[] array = new int[N];
 
         public BenchmarkState() {
             for (int k = 0; k < N; ++k)
-                array[k] = new Integer(k);
+                array[k] = k;
         }
 
     }
