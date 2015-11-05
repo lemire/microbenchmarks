@@ -29,7 +29,7 @@ public class Shuffle {
         while (candidate >= size) {
             budget -= bused;// we wasted bused bits
             if(budget >=  bused)  {
-              rkey >>= bused;
+              rkey >>>= bused;
             } else {
               rkey = r.nextInt();
               budget = 31;
@@ -44,12 +44,15 @@ public class Shuffle {
         int bused = 32 - Integer.numberOfLeadingZeros(size);
         int m2 = 1 << (32 - Integer.numberOfLeadingZeros(size-1));
         int i = size;
+        if(32 - Integer.numberOfLeadingZeros(i)!=bused) throw new RuntimeException("shit");
+        if(1 << (32 - Integer.numberOfLeadingZeros(i-1))!=m2) throw new RuntimeException("shit");
+
         while (i > 1) {
-            for (; 2 * i >= m2; i--) {
+            for (; 2 * i > m2; i--) {
                 final int nextpos = fastFairRandomInt(i, m2 - 1, bused, rnd);
                 swap(arr, i - 1, nextpos);
             }
-            m2 = m2 / 2;
+            m2 = m2 >>> 1;
             bused--;
         }
     }
@@ -76,7 +79,7 @@ public class Shuffle {
 
     @State(Scope.Benchmark)
     public static class BenchmarkState {
-        int N = 2048;//16777216;
+        int N = 16777216;
         int[] array = new int[N];
 
         public BenchmarkState() {
@@ -98,7 +101,7 @@ public class Shuffle {
     }
 
     @Benchmark
-    public void fastshuffle(BenchmarkState s) {
+    public void aa__fastshuffle(BenchmarkState s) {
         fast_shuffle(s.array, rr);
     }
 
