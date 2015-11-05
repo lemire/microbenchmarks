@@ -23,15 +23,19 @@ public class Shuffle {
     static int fastFairRandomInt(int size, int mask, int bused, MersenneTwisterFast r) {
         int candidate, rkey, budget;
         // such a loop is necessary for the result to be fair
-        do {
-            budget = 31;// assume that this is what we have
-            rkey = r.nextInt();
-            candidate = rkey & mask;
-            while ((candidate >= size) && (budget >= bused)) {
-                rkey >>>= bused;
-                candidate = rkey & mask;
+        budget = 31;// assume that this is what we have
+        rkey = r.nextInt();
+        candidate = rkey & mask;
+
+        while (candidate >= size) {
+            budget -= bused;// we wasted bused bits
+            if(budget >=  bused)  {
+              rkey >>= bused;
+            } else {
+              rkey = r.nextInt();
             }
-        } while (candidate >= size); // will be predicted as false
+            candidate = rkey & mask;
+        } 
         return candidate;
     }
 
