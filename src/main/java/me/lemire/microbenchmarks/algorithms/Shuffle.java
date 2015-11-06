@@ -19,6 +19,43 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 public class Shuffle {
+    
+    
+    static void testfairness(int maxsize, MersenneTwisterFast r) {
+        for(int size = 2; size <maxsize; ++size) {
+            int i;
+            int m2 = 1 << (32- Integer.numberOfLeadingZeros(size-1));
+            double ratio = (double) size / m2;
+            int mask = m2 -1;
+            int count = 10000;
+            double predicted = (1-ratio) * count;
+            int missed = 0;
+            for(i = 0 ; i < count; ++i ) {
+                if((r.nextInt() & mask) >= size) ++missed;
+            }
+            if((double)missed > 1.1 * predicted + 20) {
+                throw new RuntimeException("Bad RNG.");
+            }
+        }
+    }
+    
+    static void testfairness(int maxsize, Random r) {
+        for(int size = 2; size <maxsize; ++size) {
+            int i;
+            int m2 = 1 << (32- Integer.numberOfLeadingZeros(size-1));
+            double ratio = (double) size / m2;
+            int mask = m2 -1;
+            int count = 10000;
+            double predicted = (1-ratio) * count;
+            int missed = 0;
+            for(i = 0 ; i < count; ++i ) {
+                if((r.nextInt() & mask) >= size) ++missed;
+            }
+            if((double)missed > 1.1 * predicted + 20) {
+                throw new RuntimeException("Bad RNG.");
+            }
+        }
+    }
 
     static int fastFairRandomInt(int size, int mask, int bused, MersenneTwisterFast r) {
         int candidate, rkey, budget;
@@ -130,13 +167,16 @@ public class Shuffle {
         int[] array = new int[N];
 
         public BenchmarkState() {
+            testfairness(1000, rr);
+            testfairness(1000, r);
+
             for (int k = 0; k < N; ++k)
                 array[k] = k;
         }
 
     }
-    MersenneTwisterFast rr = new MersenneTwisterFast();
-    Random r = new Random();
+    static MersenneTwisterFast rr = new MersenneTwisterFast();
+    static Random r = new Random();
     
     @Benchmark
     public void basicshuffle(BenchmarkState s) {
