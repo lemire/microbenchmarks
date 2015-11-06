@@ -66,46 +66,45 @@ public class Shuffle {
         while (candidate >= size) {
             budget -= bused;// we wasted bused bits
             if(budget >=  bused)  {
-              rkey >>>= bused;
+                rkey >>>= bused;
             } else {
-              rkey = r.nextInt();
-              budget = 31;
+                rkey = r.nextInt();
+                budget = 31;
             }
             candidate = rkey & mask;
-        } 
+        }
         return candidate;
     }
 
     static int fastFairRandomInt2(int size, int mask, int bused, MersenneTwisterFast r) {
         int candidate, rkey, budget;
-        // such a loop is necessary for the result to be fair
-        budget = 31;// assume that this is what we have
+
+
+// such a loop is necessary for the result to be fair
         rkey = r.nextInt();
         candidate = rkey & mask;
-        if(candidate >= size) {
-            budget -= bused;// we wasted bused bits
-            if(budget >=  bused)  {
-              rkey >>>= bused;
-            } else {
-              rkey = r.nextInt();
-              budget = 31;
-            }
-            candidate = rkey & mask;
-        } 
+        if(bused <= 31/2) {
+            rkey >>>= bused;
+            int maski = (size-candidate-1)>>31;
+            int candidate2 = (maski & (rkey & mask))|(~maski & candidate);
+            if(candidate2 < size) return candidate2;
+            budget = 31-bused;
+        } else
+            budget = 31;// assume that this is what we have
         while (candidate >= size) {
             budget -= bused;// we wasted bused bits
             if(budget >=  bused)  {
-              rkey >>>= bused;
+                rkey >>>= bused;
             } else {
-              rkey = r.nextInt();
-              budget = 31;
+                rkey = r.nextInt();
+                budget = 31;
             }
             candidate = rkey & mask;
-        } 
+        }
         return candidate;
     }
 
-   public static void fast_shuffle(int arr[], MersenneTwisterFast rnd) {
+    public static void fast_shuffle(int arr[], MersenneTwisterFast rnd) {
         final int size = arr.length;
         int bused = 32 - Integer.numberOfLeadingZeros(size);
         int m2 = 1 << (32 - Integer.numberOfLeadingZeros(size-1));
@@ -123,24 +122,24 @@ public class Shuffle {
         }
     }
 
-   public static void fast_shuffle2(int arr[], MersenneTwisterFast rnd) {
-       final int size = arr.length;
-       int bused = 32 - Integer.numberOfLeadingZeros(size);
-       int m2 = 1 << (32 - Integer.numberOfLeadingZeros(size-1));
-       int i = size;
-       if(32 - Integer.numberOfLeadingZeros(i)!=bused) throw new RuntimeException("shit");
-       if(1 << (32 - Integer.numberOfLeadingZeros(i-1))!=m2) throw new RuntimeException("shit");
+    public static void fast_shuffle2(int arr[], MersenneTwisterFast rnd) {
+        final int size = arr.length;
+        int bused = 32 - Integer.numberOfLeadingZeros(size);
+        int m2 = 1 << (32 - Integer.numberOfLeadingZeros(size-1));
+        int i = size;
+        if(32 - Integer.numberOfLeadingZeros(i)!=bused) throw new RuntimeException("shit");
+        if(1 << (32 - Integer.numberOfLeadingZeros(i-1))!=m2) throw new RuntimeException("shit");
 
-       while (i > 1) {
-           for (; 2 * i > m2; i--) {
-               final int nextpos = fastFairRandomInt2(i, m2 - 1, bused, rnd);
-               swap(arr, i - 1, nextpos);
-           }
-           m2 = m2 >>> 1;
-           bused--;
-       }
-   }
-   private static void swap(int[] arr, int i, int j) {
+        while (i > 1) {
+            for (; 2 * i > m2; i--) {
+                final int nextpos = fastFairRandomInt2(i, m2 - 1, bused, rnd);
+                swap(arr, i - 1, nextpos);
+            }
+            m2 = m2 >>> 1;
+            bused--;
+        }
+    }
+    private static void swap(int[] arr, int i, int j) {
         int tmp = arr[i];
         arr[i] = arr[j];
         arr[j] = tmp;
@@ -152,7 +151,7 @@ public class Shuffle {
         for (int i = size; i > 1; i--)
             swap(arr, i - 1, rnd.nextInt(i));
     }
-    
+
     public static void shuffle(int arr[], MersenneTwisterFast rnd) {
         int size = arr.length;
 
@@ -163,7 +162,7 @@ public class Shuffle {
 
     @State(Scope.Benchmark)
     public static class BenchmarkState {
-        int N = 16777216;
+        int N = 2048;//16777216;
         int[] array = new int[N];
 
         public BenchmarkState() {
@@ -178,6 +177,7 @@ public class Shuffle {
     static MersenneTwisterFast rr = new MersenneTwisterFast();
     static Random r = new Random();
     
+
     @Benchmark
     public void basicshuffle(BenchmarkState s) {
         shuffle(s.array, r);
@@ -191,7 +191,7 @@ public class Shuffle {
     public void aa__fastshuffle(BenchmarkState s) {
         fast_shuffle(s.array, rr);
     }
-    
+
 
     @Benchmark
     public void aa__fastshuffle2(BenchmarkState s) {
@@ -200,8 +200,8 @@ public class Shuffle {
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(Shuffle.class.getSimpleName()).warmupIterations(2)
-                .measurementIterations(3).forks(1).build();
+        .include(Shuffle.class.getSimpleName()).warmupIterations(2)
+        .measurementIterations(3).forks(1).build();
 
         new Runner(opt).run();
     }
