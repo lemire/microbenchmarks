@@ -27,13 +27,13 @@ public class Shuffle {
             int m2 = 1 << (32- Integer.numberOfLeadingZeros(size-1));
             double ratio = (double) size / m2;
             int mask = m2 -1;
-            int count = 10000;
+            int count = 20000;
             double predicted = (1-ratio) * count;
             int missed = 0;
             for(i = 0 ; i < count; ++i ) {
                 if((r.nextInt() & mask) >= size) ++missed;
             }
-            if((double)missed > 1.1 * predicted + 20) {
+            if((double)missed > 1.2 * predicted + 20) {
                 throw new RuntimeException("Bad RNG.");
             }
         }
@@ -45,13 +45,13 @@ public class Shuffle {
             int m2 = 1 << (32- Integer.numberOfLeadingZeros(size-1));
             double ratio = (double) size / m2;
             int mask = m2 -1;
-            int count = 10000;
+            int count = 20000;
             double predicted = (1-ratio) * count;
             int missed = 0;
             for(i = 0 ; i < count; ++i ) {
                 if((r.nextInt() & mask) >= size) ++missed;
             }
-            if((double)missed > 1.1 * predicted + 20) {
+            if((double)missed > 1.2 * predicted + 20) {
                 throw new RuntimeException("Bad RNG.");
             }
         }
@@ -162,7 +162,7 @@ public class Shuffle {
 
     @State(Scope.Benchmark)
     public static class BenchmarkState {
-        int N = 2048;//16777216;
+        int N = 16777216;
         int[] array = new int[N];
 
         public BenchmarkState() {
