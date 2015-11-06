@@ -21,7 +21,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 public class Shuffle {
     
     
-    static void testfairness(int maxsize, MersenneTwisterFast r) {
+    private static void testfairness(int maxsize, MersenneTwisterFast r) {
         for(int size = 2; size <maxsize; ++size) {
             int i;
             int m2 = 1 << (32- Integer.numberOfLeadingZeros(size-1));
@@ -39,7 +39,7 @@ public class Shuffle {
         }
     }
     
-    static void testfairness(int maxsize, Random r) {
+    private static void testfairness(int maxsize, Random r) {
         for(int size = 2; size <maxsize; ++size) {
             int i;
             int m2 = 1 << (32- Integer.numberOfLeadingZeros(size-1));
@@ -57,7 +57,7 @@ public class Shuffle {
         }
     }
 
-    static int fastFairRandomInt(int size, int mask, int bused, MersenneTwisterFast r) {
+    private static int fastFairRandomInt(int size, int mask, int bused, MersenneTwisterFast r) {
         int candidate, rkey, budget;
         // such a loop is necessary for the result to be fair
         budget = 31;// assume that this is what we have
@@ -109,9 +109,6 @@ public class Shuffle {
         int bused = 32 - Integer.numberOfLeadingZeros(size);
         int m2 = 1 << (32 - Integer.numberOfLeadingZeros(size-1));
         int i = size;
-        if(32 - Integer.numberOfLeadingZeros(i)!=bused) throw new RuntimeException("shit");
-        if(1 << (32 - Integer.numberOfLeadingZeros(i-1))!=m2) throw new RuntimeException("shit");
-
         while (i > 1) {
             for (; 2 * i > m2; i--) {
                 final int nextpos = fastFairRandomInt(i, m2 - 1, bused, rnd);
@@ -127,9 +124,6 @@ public class Shuffle {
         int bused = 32 - Integer.numberOfLeadingZeros(size);
         int m2 = 1 << (32 - Integer.numberOfLeadingZeros(size-1));
         int i = size;
-        if(32 - Integer.numberOfLeadingZeros(i)!=bused) throw new RuntimeException("shit");
-        if(1 << (32 - Integer.numberOfLeadingZeros(i-1))!=m2) throw new RuntimeException("shit");
-
         while (i > 1) {
             for (; 2 * i > m2; i--) {
                 final int nextpos = fastFairRandomInt2(i, m2 - 1, bused, rnd);
@@ -139,6 +133,7 @@ public class Shuffle {
             bused--;
         }
     }
+    
     private static void swap(int[] arr, int i, int j) {
         int tmp = arr[i];
         arr[i] = arr[j];
