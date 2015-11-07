@@ -76,10 +76,17 @@ public class Shuffle {
         return candidate;
     }
 
+    private static int fastFairRandomInt(RandomBuffer rb, int size, int mask, int bused, MersenneTwisterFast r) {
+        int candidate = rb.grabBits(mask, bused);
+        while (candidate >= size) {
+            candidate = rb.grabBits(mask, bused);
+        }
+        return candidate;
+    }
+
+    
     static int fastFairRandomInt2(int size, int mask, int bused, MersenneTwisterFast r) {
         int candidate, rkey, budget;
-
-
 // such a loop is necessary for the result to be fair
         rkey = r.nextInt();
         candidate = rkey & mask;
@@ -109,6 +116,7 @@ public class Shuffle {
         int bused = 32 - Integer.numberOfLeadingZeros(size);
         int m2 = 1 << (32 - Integer.numberOfLeadingZeros(size-1));
         int i = size;
+
         while (i > 1) {
             for (; 2 * i > m2; i--) {
                 final int nextpos = fastFairRandomInt(i, m2 - 1, bused, rnd);
@@ -118,7 +126,23 @@ public class Shuffle {
             bused--;
         }
     }
+    public static void fast_shuffle_buffer(int arr[], MersenneTwisterFast rnd) {
+        final int size = arr.length;
+        int bused = 32 - Integer.numberOfLeadingZeros(size);
+        int m2 = 1 << (32 - Integer.numberOfLeadingZeros(size-1));
+        int i = size;
+        RandomBuffer rb = new RandomBuffer();
 
+        while (i > 1) {
+            for (; 2 * i > m2; i--) {
+                final int nextpos = fastFairRandomInt(rb, i, m2 - 1, bused, rnd);
+                swap(arr, i - 1, nextpos);
+            }
+            m2 = m2 >>> 1;
+            bused--;
+        }
+    }
+    
     public static void fast_shuffle2(int arr[], MersenneTwisterFast rnd) {
         final int size = arr.length;
         int bused = 32 - Integer.numberOfLeadingZeros(size);
@@ -193,6 +217,12 @@ public class Shuffle {
         fast_shuffle2(s.array, rr);
     }
 
+    @Benchmark
+    public void aa__fastshuffle_buffer(BenchmarkState s) {
+        fast_shuffle_buffer(s.array, rr);
+    }
+
+    
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
         .include(Shuffle.class.getSimpleName()).warmupIterations(2)
@@ -201,4 +231,40 @@ public class Shuffle {
         new Runner(opt).run();
     }
 
+}
+
+class RandomBuffer {
+    long buffer;
+    int available;
+    MersenneTwisterFast r = new MersenneTwisterFast();
+    
+    public RandomBuffer() {
+        init();
+    }
+    
+    int grabBits(int mask, int bused ) {
+        if(available >= bused) {
+          int answer = (int) (buffer) & mask;
+          buffer >>= bused;
+          available -= bused;
+          return answer;
+        } else {
+          // we use the bits we have
+          int answer = (int) buffer;
+          int consumed = 64 - available;
+          init();
+          answer |= (buffer << consumed);
+          answer &= mask;
+          int lastbit = bused - consumed;
+          available = 64 - lastbit;
+          buffer >>= lastbit;
+          return answer;
+        }
+      }
+
+    
+    public void init() {
+        available = 64;
+        buffer = r.nextLong();
+    }
 }
