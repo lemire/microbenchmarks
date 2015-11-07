@@ -251,7 +251,7 @@ class RandomBuffer {
         } else {
           // we use the bits we have
           int answer = (int) buffer;
-          int consumed = 64 - available;
+          int consumed = available;
           init();
           answer |= (buffer << consumed);
           answer &= mask;
