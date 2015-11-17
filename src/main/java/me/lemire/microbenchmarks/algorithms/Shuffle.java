@@ -178,10 +178,68 @@ public class Shuffle {
         for (int i = size; i > 1; i--)
             swap(arr, i - 1, rnd.nextInt(i));
     }
+    
+    static int ranged_random_mult_lazy(int  range,  MersenneTwisterFast rnd) {
+        long random32bit, candidate, multiresult;
+        long leftover;
+        final long mask = 0xFFFFFFFFL;
+        random32bit = rnd.nextInt()  & mask;
+        multiresult = random32bit * range;
+        candidate =  multiresult >>> 32;
+        leftover = multiresult & mask;
+
+        if(leftover > ((1L<<32) - range) ) {
+          final long threshold = ((1L<<32)/range * range  - 1);
+          do {
+              random32bit = rnd.nextInt() & mask;
+              multiresult = random32bit * range;
+              candidate =  multiresult >>> 32;
+              leftover =  multiresult & mask;
+          } while (leftover > threshold);
+        }
+        return (int) candidate; // [0, range)
+    }
+    
+    public static void shuffle_fastF(int arr[], MersenneTwisterFast rnd) {
+        int size = arr.length;
+
+        // Shuffle array
+        for (int i = size; i > 1; i--)
+            swap(arr, i - 1, ranged_random_mult_lazy(i,rnd));
+    }
+    static int ranged_random_mult_lazy(int  range,  Random rnd) {
+        long random32bit, candidate, multiresult;
+        long leftover;
+        final long mask = 0xFFFFFFFFL;
+        random32bit = rnd.nextInt() & mask;
+        multiresult = random32bit * range;
+        candidate =  multiresult >>> 32;
+        leftover = multiresult & mask;
+
+        if(leftover > ((1L<<32) - range) ) {
+          final long threshold = ((1L<<32)/range * range  - 1);
+          do {
+              random32bit = rnd.nextInt()  & mask;
+              multiresult = random32bit * range;
+              candidate =  multiresult >>> 32;
+              leftover =  multiresult & mask;
+          } while (leftover > threshold);
+        }
+        return (int) candidate; // [0, range)
+    }
+    
+    public static void shuffle_fastF(int arr[], Random rnd) {
+        int size = arr.length;
+
+        // Shuffle array
+        for (int i = size; i > 1; i--)
+            swap(arr, i - 1, ranged_random_mult_lazy(i,rnd));
+    }
+    
 
     @State(Scope.Benchmark)
     public static class BenchmarkState {
-        int N = 16777216;
+        int N = 1777216;
         int[] array = new int[N];
 
         public BenchmarkState() {
@@ -203,7 +261,18 @@ public class Shuffle {
     }
     @Benchmark
     public void basicshuffle_MT(BenchmarkState s) {
-        shuffle(s.array, r);
+        shuffle(s.array, rr);
+    }
+    
+
+    @Benchmark
+    public void fastFshuffle(BenchmarkState s) {
+        shuffle_fastF(s.array, r);
+    }
+    
+    @Benchmark
+    public void fastFshuffle_MT(BenchmarkState s) {
+        shuffle_fastF(s.array, rr);
     }
 
     @Benchmark
