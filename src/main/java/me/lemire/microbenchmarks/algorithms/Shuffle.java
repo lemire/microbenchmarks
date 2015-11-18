@@ -180,26 +180,27 @@ public class Shuffle {
     }
     
     static int ranged_random_mult_lazy(int  range,  MersenneTwisterFast rnd) {
-        long random32bit, candidate, multiresult;
+        long random32bit, multiresult;
         long leftover;
+        if((range & (range - 1)) == 0)
+            return rnd.nextInt() & (range - 1);
         final long mask = 0xFFFFFFFFL;
         random32bit = rnd.nextInt()  & mask;
         multiresult = random32bit * range;
-        candidate =  multiresult >>> 32;
+        //candidate =  multiresult >>> 32;
         leftover = multiresult & mask;
-        int lsbset = range & (~(range -1));
-
-
-        if(leftover >= ((1L<<32) - range + lsbset) ) {
-          final long threshold = ((1L<<32)/range * range  - 1);
+        //int lsbset = range & (~(range -1));
+        //if(leftover >= ((1L<<32) - range + lsbset) ) {
+        if(leftover >= ((1L<<32) - range ) ) {
+          final long threshold = 0xFFFFFFFF / range * range - 1;//((1L<<32)/range * range  - 1);
           do {
               random32bit = rnd.nextInt() & mask;
               multiresult = random32bit * range;
-              candidate =  multiresult >>> 32;
+              //candidate =  multiresult >>> 32;
               leftover =  multiresult & mask;
           } while (leftover > threshold);
         }
-        return (int) candidate; // [0, range)
+        return (int) (multiresult >>> 32); // [0, range)
     }
     
     public static void shuffle_fastF(int arr[], MersenneTwisterFast rnd) {
@@ -210,24 +211,26 @@ public class Shuffle {
             swap(arr, i - 1, ranged_random_mult_lazy(i,rnd));
     }
     static int ranged_random_mult_lazy(int  range,  Random rnd) {
-        long random32bit, candidate, multiresult;
+        long random32bit, multiresult;
         long leftover;
+        if((range & (range - 1)) == 0)
+            return rnd.nextInt() & (range - 1);
         final long mask = 0xFFFFFFFFL;
         random32bit = rnd.nextInt() & mask;
         multiresult = random32bit * range;
-        candidate =  multiresult >>> 32;
+        //candidate =  multiresult >>> 32;
         leftover = multiresult & mask;
 
         if(leftover >= ((1L<<32) - range) ) {
-          final long threshold = ((1L<<32)/range * range  - 1);
+          final long threshold = 0xFFFFFFFF / range * range - 1;//((1L<<32)/range * range  - 1);
           do {
               random32bit = rnd.nextInt()  & mask;
               multiresult = random32bit * range;
-              candidate =  multiresult >>> 32;
+              //candidate =  multiresult >>> 32;
               leftover =  multiresult & mask;
           } while (leftover > threshold);
         }
-        return (int) candidate; // [0, range)
+        return (int) (multiresult >>> 32); // [0, range)
     }
     
     public static void shuffle_fastF(int arr[], Random rnd) {
