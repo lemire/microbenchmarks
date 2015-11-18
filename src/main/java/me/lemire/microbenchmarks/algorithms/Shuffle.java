@@ -187,8 +187,10 @@ public class Shuffle {
         multiresult = random32bit * range;
         candidate =  multiresult >>> 32;
         leftover = multiresult & mask;
+        int lsbset = range & (~(range -1));
 
-        if(leftover > ((1L<<32) - range) ) {
+
+        if(leftover >= ((1L<<32) - range + lsbset) ) {
           final long threshold = ((1L<<32)/range * range  - 1);
           do {
               random32bit = rnd.nextInt() & mask;
@@ -216,7 +218,7 @@ public class Shuffle {
         candidate =  multiresult >>> 32;
         leftover = multiresult & mask;
 
-        if(leftover > ((1L<<32) - range) ) {
+        if(leftover >= ((1L<<32) - range) ) {
           final long threshold = ((1L<<32)/range * range  - 1);
           do {
               random32bit = rnd.nextInt()  & mask;
