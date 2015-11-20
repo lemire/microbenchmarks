@@ -56,107 +56,6 @@ public class Shuffle {
             }
         }
     }
-
-    private static int fastFairRandomInt(int size, int mask, int bused, MersenneTwisterFast r) {
-        int candidate, rkey, budget;
-        // such a loop is necessary for the result to be fair
-        budget = 31;// assume that this is what we have
-        rkey = r.nextInt();
-        candidate = rkey & mask;
-        while (candidate >= size) {
-            budget -= bused;// we wasted bused bits
-            if(budget >=  bused)  {
-                rkey >>>= bused;
-            } else {
-                rkey = r.nextInt();
-                budget = 31;
-            }
-            candidate = rkey & mask;
-        }
-        return candidate;
-    }
-
-    private static int fastFairRandomInt(RandomBuffer rb, int size, int mask, int bused, MersenneTwisterFast r) {
-        int candidate = rb.grabBits(mask, bused);
-        while (candidate >= size) {
-            candidate = rb.grabBits(mask, bused);
-        }
-        return candidate;
-    }
-
-    
-    static int fastFairRandomInt2(int size, int mask, int bused, MersenneTwisterFast r) {
-        int candidate, rkey, budget;
-// such a loop is necessary for the result to be fair
-        rkey = r.nextInt();
-        candidate = rkey & mask;
-        if(bused <= 31/2) {
-            rkey >>>= bused;
-            int maski = (size-candidate-1)>>31;
-            int candidate2 = (maski & (rkey & mask))|(~maski & candidate);
-            if(candidate2 < size) return candidate2;
-            budget = 31-bused;
-        } else
-            budget = 31;// assume that this is what we have
-        while (candidate >= size) {
-            budget -= bused;// we wasted bused bits
-            if(budget >=  bused)  {
-                rkey >>>= bused;
-            } else {
-                rkey = r.nextInt();
-                budget = 31;
-            }
-            candidate = rkey & mask;
-        }
-        return candidate;
-    }
-
-    public static void fast_shuffle(int arr[], MersenneTwisterFast rnd) {
-        final int size = arr.length;
-        int bused = 32 - Integer.numberOfLeadingZeros(size);
-        int m2 = 1 << (32 - Integer.numberOfLeadingZeros(size-1));
-        int i = size;
-
-        while (i > 1) {
-            for (; 2 * i > m2; i--) {
-                final int nextpos = fastFairRandomInt(i, m2 - 1, bused, rnd);
-                swap(arr, i - 1, nextpos);
-            }
-            m2 = m2 >>> 1;
-            bused--;
-        }
-    }
-    public static void fast_shuffle_buffer(int arr[], MersenneTwisterFast rnd) {
-        final int size = arr.length;
-        int bused = 32 - Integer.numberOfLeadingZeros(size);
-        int m2 = 1 << (32 - Integer.numberOfLeadingZeros(size-1));
-        int i = size;
-        RandomBuffer rb = new RandomBuffer();
-
-        while (i > 1) {
-            for (; 2 * i > m2; i--) {
-                final int nextpos = fastFairRandomInt(rb, i, m2 - 1, bused, rnd);
-                swap(arr, i - 1, nextpos);
-            }
-            m2 = m2 >>> 1;
-            bused--;
-        }
-    }
-    
-    public static void fast_shuffle2(int arr[], MersenneTwisterFast rnd) {
-        final int size = arr.length;
-        int bused = 32 - Integer.numberOfLeadingZeros(size);
-        int m2 = 1 << (32 - Integer.numberOfLeadingZeros(size-1));
-        int i = size;
-        while (i > 1) {
-            for (; 2 * i > m2; i--) {
-                final int nextpos = fastFairRandomInt2(i, m2 - 1, bused, rnd);
-                swap(arr, i - 1, nextpos);
-            }
-            m2 = m2 >>> 1;
-            bused--;
-        }
-    }
     
     private static void swap(int[] arr, int i, int j) {
         int tmp = arr[i];
@@ -187,18 +86,14 @@ public class Shuffle {
         final long mask = 0xFFFFFFFFL;
         random32bit = rnd.nextInt()  & mask;
         multiresult = random32bit * range;
-        //candidate =  multiresult >>> 32;
         leftover = multiresult & mask;
-        //int lsbset = range & (~(range -1));
-        //if(leftover >= ((1L<<32) - range + lsbset) ) {
-        if(leftover >= ((1L<<32) - range ) ) {
-          final long threshold = 0xFFFFFFFF / range * range - 1;//((1L<<32)/range * range  - 1);
-          do {
+        if(leftover < range) {
+          final long threshold = 0xFFFFFFFF % range;
+          while (leftover <= threshold) {
               random32bit = rnd.nextInt() & mask;
               multiresult = random32bit * range;
-              //candidate =  multiresult >>> 32;
               leftover =  multiresult & mask;
-          } while (leftover > threshold);
+          } 
         }
         return (int) (multiresult >>> 32); // [0, range)
     }
@@ -218,17 +113,14 @@ public class Shuffle {
         final long mask = 0xFFFFFFFFL;
         random32bit = rnd.nextInt() & mask;
         multiresult = random32bit * range;
-        //candidate =  multiresult >>> 32;
         leftover = multiresult & mask;
-
-        if(leftover >= ((1L<<32) - range) ) {
-          final long threshold = 0xFFFFFFFF / range * range - 1;//((1L<<32)/range * range  - 1);
-          do {
+        if(leftover < range) {
+          final long threshold = 0xFFFFFFFF % range;
+          while (leftover <= threshold) {
               random32bit = rnd.nextInt()  & mask;
               multiresult = random32bit * range;
-              //candidate =  multiresult >>> 32;
               leftover =  multiresult & mask;
-          } while (leftover > threshold);
+          } 
         }
         return (int) (multiresult >>> 32); // [0, range)
     }
@@ -280,22 +172,6 @@ public class Shuffle {
         shuffle_fastF(s.array, rr);
     }
 
-    @Benchmark
-    public void aa__fastshuffle(BenchmarkState s) {
-        fast_shuffle(s.array, rr);
-    }
-
-
-    @Benchmark
-    public void aa__fastshuffle2(BenchmarkState s) {
-        fast_shuffle2(s.array, rr);
-    }
-
-    @Benchmark
-    public void aa__fastshuffle_buffer(BenchmarkState s) {
-        fast_shuffle_buffer(s.array, rr);
-    }
-
     
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
@@ -307,38 +183,3 @@ public class Shuffle {
 
 }
 
-class RandomBuffer {
-    long buffer;
-    int available;
-    MersenneTwisterFast r = new MersenneTwisterFast();
-    
-    public RandomBuffer() {
-        init();
-    }
-    
-    int grabBits(int mask, int bused ) {
-        if(available >= bused) {
-          int answer = (int) (buffer) & mask;
-          buffer >>= bused;
-          available -= bused;
-          return answer;
-        } else {
-          // we use the bits we have
-          int answer = (int) buffer;
-          int consumed = available;
-          init();
-          answer |= (buffer << consumed);
-          answer &= mask;
-          int lastbit = bused - consumed;
-          available = 64 - lastbit;
-          buffer >>= lastbit;
-          return answer;
-        }
-      }
-
-    
-    public void init() {
-        available = 64;
-        buffer = r.nextLong();
-    }
-}
