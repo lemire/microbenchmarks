@@ -102,6 +102,36 @@ public class ShortBinarySearch {
         }
         return k;
     }
+    
+    public static int linear256_16(final short[] array, final short ikey) {
+        int c = array.length;
+        int k = 0;
+        int key = ikey & 0xFFFF;
+        for (; k < c; ++k) {
+            if ((array[k] & 0xFFFF) >= key)
+                return k;
+        }
+        for(; k + 255 < c; k += 256) {
+            if((array[k + 255]& 0xFFFF) >= ikey) {
+                break;
+            }
+        }
+        for(; k + 15 < c; k += 16) {
+            if((array[k + 15]& 0xFFFF) >= ikey) {
+                break;
+            }
+        }
+        for(; k  < c; k ++) {
+            short val = array[k];
+            if((val& 0xFFFF) >= ikey) {
+                if(val == ikey) return k;
+                else return - k - 1;
+            }
+        }
+
+        return k;
+    }
+    
 
     public static int branchlessUnsignedBinarySearch(final short[] array,
             final short k) {
@@ -361,6 +391,20 @@ public class ShortBinarySearch {
             for (int z = 0; z < howmanyarrays; ++z) {
 
                 bogus += hybridUnsignedBinarySearch(s.array[z],
+                        s.queries[k]);
+            }
+        }
+        s.bh.consume(bogus);
+    }
+    
+    @Benchmark
+    public void aaa_linear256_16(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+        for (int k = 0; k < l; ++k) {
+            for (int z = 0; z < howmanyarrays; ++z) {
+
+                bogus += linear256_16(s.array[z],
                         s.queries[k]);
             }
         }
