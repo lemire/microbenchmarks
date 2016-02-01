@@ -18,7 +18,6 @@
        <artifactId>maven-compiler-plugin</artifactId>
        <version>2.3.2</version>
    </plugin>
-
  <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <executions>
@@ -39,7 +38,13 @@
 </build>
 
 	<dependencies>
-		<dependency>
+
+  <dependency>
+    <groupId>com.github.alexeyr.pcg</groupId>
+    <artifactId>pcg</artifactId>
+    <version>0.9.1</version> 
+  </dependency>
+	<dependency>
 			<groupId>org.openjdk.jmh</groupId>
 			<artifactId>jmh-core</artifactId>
 			<version>${jmh.version}</version>
