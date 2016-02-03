@@ -1,7 +1,9 @@
 package me.lemire.microbenchmarks.random;
 
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+
 import com.github.alexeyr.pcg.Pcg32;
 
 import org.openjdk.jmh.annotations.Benchmark;
@@ -43,6 +45,11 @@ public class RandomNumberGenerator {
     @Benchmark
     public int manualJavaRandom(BenchmarkState s) {
         return  s.manualJavaNext(32);
+    }
+
+    @Benchmark
+    public int basicThreadLocalRandom(BenchmarkState s) {
+        return ThreadLocalRandom.current().nextInt();
     }
     
     @Benchmark
