@@ -20,12 +20,15 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class ShortBinarySearch {
+
     @Param({ "8", "32", "128", "256", "512", "1024", "2048", "4096" })
     static int N;
     
-    @Param({"500000" })
-    static int howmanyarrays;
+    static int memory_desired = 1024*1024*1024; // 1 GB
     
+    static int memory_per_array = N * 2; // 2 bytes per value 
+    
+    static int howmanyarrays = memory_desired / memory_per_array;
 
     @State(Scope.Benchmark)
     public static class BenchmarkState {
@@ -41,7 +44,7 @@ public class ShortBinarySearch {
 
         public BenchmarkState() {
             array = new short[howmanyarrays][N];
-            System.out.println("*** Array memory usage is at least "+((N*howmanyarrays*2)/1024)+"Kb");
+            System.out.println("*** Array memory usage is at least " + ( (N * howmanyarrays * 2 ) / ( 1024 * 1024 ) ) + "MB");
 
             queries = new short[1024];
             for (int z = 0; z < howmanyarrays; ++z) {
@@ -104,31 +107,26 @@ public class ShortBinarySearch {
     }
     
     public static int linear256_16(final short[] array, final short ikey) {
-        int c = array.length;
+        final int c = array.length;
         int k = 0;
-        int key = ikey & 0xFFFF;
-        for (; k < c; ++k) {
-            if ((array[k] & 0xFFFF) >= key)
-                return k;
-        }
+        final int key = ikey & 0xFFFF;
         for(; k + 255 < c; k += 256) {
-            if((array[k + 255]& 0xFFFF) >= ikey) {
+            if((array[k + 255] & 0xFFFF) >= key) {
                 break;
             }
         }
         for(; k + 15 < c; k += 16) {
-            if((array[k + 15]& 0xFFFF) >= ikey) {
+            if((array[k + 15] & 0xFFFF) >= key) {
                 break;
             }
         }
         for(; k  < c; k ++) {
-            short val = array[k];
-            if((val& 0xFFFF) >= ikey) {
+            final short val = array[k];
+            if((val & 0xFFFF) >= key) {
                 if(val == ikey) return k;
                 else return - k - 1;
             }
         }
-
         return k;
     }
     
