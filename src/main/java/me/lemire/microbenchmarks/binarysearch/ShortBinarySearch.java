@@ -23,7 +23,7 @@ public class ShortBinarySearch {
     @Param({ "8", "32", "128", "256", "512", "1024", "2048", "4096" })
     static int N;
     
-    @Param({"5", "5000", "500000" })
+    @Param({"500000" })
     static int howmanyarrays;
     
 
@@ -156,62 +156,6 @@ public class ShortBinarySearch {
         return -(pos + 1);
     }
 
-    public static int hybridUnsignedBinarySearch(final short[] array,
-            final short k) {
-        int ikey = toIntUnsigned(k);
-        int n = array.length;
-        int pos = 0;
-        // for large arrays that are in cache, unrolling could
-        // issue too many wasteful random access queries
-        while(n>=16) {
-            final int half = n >>> 1;
-            final int index = pos + half;
-            n-= half;
-            final int val = array[index] & 0xFFFF;
-            if(ikey > val) {
-                    pos = index;
-            }
-        }
-       // we finish the job with a sequential search 
-        int x = 0;
-        for(; x < n; ++x) {
-            final int val = toIntUnsigned(array[pos + x]);
-            if(val >= ikey) {
-                if(val == ikey) return pos;
-                break;
-            }
-        }
-        return -(pos + x + 1);
-    }
-
-    
-    public static int hybridUnsignedBinarySearch64(final short[] array,
-            final short k) {
-        int ikey = toIntUnsigned(k);
-        int low = 0;
-        int high = array.length - 1;
-        while (low + 64 <= high) {
-            final int middleIndex = (low + high) >>> 1;
-            final int middleValue = toIntUnsigned(array[middleIndex]);
-
-            if (middleValue < ikey)
-                low = middleIndex + 1;
-            else if (middleValue > ikey)
-                high = middleIndex - 1;
-            else
-                return middleIndex;
-        }
-       // we finish the job with a sequential search 
-        int x = low;
-        for(; x <= high; ++x) {
-            final int val = toIntUnsigned(array[x]);
-            if(val >= ikey) {
-                if(val == ikey) return x;
-                break;
-            }
-        }
-        return -(x + 1);
-    }
 
     
     // this appears to be all-around winner
@@ -221,64 +165,6 @@ public class ShortBinarySearch {
         int low = 0;
         int high = array.length - 1;
         while (low + 32 <= high) {
-            final int middleIndex = (low + high) >>> 1;
-            final int middleValue = toIntUnsigned(array[middleIndex]);
-
-            if (middleValue < ikey)
-                low = middleIndex + 1;
-            else if (middleValue > ikey)
-                high = middleIndex - 1;
-            else
-                return middleIndex;
-        }
-       // we finish the job with a sequential search 
-        int x = low;
-        for(; x <= high; ++x) {
-            final int val = toIntUnsigned(array[x]);
-            if(val >= ikey) {
-                if(val == ikey) return x;
-                break;
-            }
-        }
-        return -(x + 1);
-    }
-
-    
-    
-    public static int hybridUnsignedBinarySearch16(final short[] array,
-            final short k) {
-        int ikey = toIntUnsigned(k);
-        int low = 0;
-        int high = array.length - 1;
-        while (low + 16 <= high) {
-            final int middleIndex = (low + high) >>> 1;
-            final int middleValue = toIntUnsigned(array[middleIndex]);
-
-            if (middleValue < ikey)
-                low = middleIndex + 1;
-            else if (middleValue > ikey)
-                high = middleIndex - 1;
-            else
-                return middleIndex;
-        }
-       // we finish the job with a sequential search 
-        int x = low;
-        for(; x <= high; ++x) {
-            final int val = toIntUnsigned(array[x]);
-            if(val >= ikey) {
-                if(val == ikey) return x;
-                break;
-            }
-        }
-        return -(x + 1);
-    }
-
-    public static int hybridUnsignedBinarySearch8(final short[] array,
-            final short k) {
-        int ikey = toIntUnsigned(k);
-        int low = 0;
-        int high = array.length - 1;
-        while (low + 8 <= high) {
             final int middleIndex = (low + high) >>> 1;
             final int middleValue = toIntUnsigned(array[middleIndex]);
 
@@ -326,37 +212,9 @@ public class ShortBinarySearch {
         return -(low + 1);
     }
 
+   
     @Benchmark
-    public void aaa_hybridUnsignedBinarySearch8(BenchmarkState s) {
-        final int l = s.queries.length;
-        int bogus = 0;
-        for (int k = 0; k < l; ++k) {
-            for (int z = 0; z < howmanyarrays; ++z) {
-
-                bogus += hybridUnsignedBinarySearch8(s.array[z],
-                        s.queries[k]);
-            }
-        }
-        s.bh.consume(bogus);
-    }
-
-    
-    @Benchmark
-    public void aaa_hybridUnsignedBinarySearch16(BenchmarkState s) {
-        final int l = s.queries.length;
-        int bogus = 0;
-        for (int k = 0; k < l; ++k) {
-            for (int z = 0; z < howmanyarrays; ++z) {
-
-                bogus += hybridUnsignedBinarySearch16(s.array[z],
-                        s.queries[k]);
-            }
-        }
-        s.bh.consume(bogus);
-    }
-    
-    @Benchmark
-    public void aaa_hybridUnsignedBinarySearch32(BenchmarkState s) {
+    public void hybridUnsignedBinarySearch32(BenchmarkState s) {
         final int l = s.queries.length;
         int bogus = 0;
         for (int k = 0; k < l; ++k) {
@@ -368,35 +226,7 @@ public class ShortBinarySearch {
         }
         s.bh.consume(bogus);
     }
-    
-    @Benchmark
-    public void aaa_hybridUnsignedBinarySearch64(BenchmarkState s) {
-        final int l = s.queries.length;
-        int bogus = 0;
-        for (int k = 0; k < l; ++k) {
-            for (int z = 0; z < howmanyarrays; ++z) {
-
-                bogus += hybridUnsignedBinarySearch64(s.array[z],
-                        s.queries[k]);
-            }
-        }
-        s.bh.consume(bogus);
-    }
-    
-    @Benchmark
-    public void aaa_hybridUnsignedBinarySearch(BenchmarkState s) {
-        final int l = s.queries.length;
-        int bogus = 0;
-        for (int k = 0; k < l; ++k) {
-            for (int z = 0; z < howmanyarrays; ++z) {
-
-                bogus += hybridUnsignedBinarySearch(s.array[z],
-                        s.queries[k]);
-            }
-        }
-        s.bh.consume(bogus);
-    }
-    
+   
     @Benchmark
     public void aaa_linear256_16(BenchmarkState s) {
         final int l = s.queries.length;
