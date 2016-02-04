@@ -24,12 +24,6 @@ public class ShortBinarySearch {
     @Param({ "8", "32", "128", "256", "512", "1024", "2048", "4096" })
     static int N;
     
-    static int memory_desired = 1024*1024*1024; // 1 GB
-    
-    static int memory_per_array = N * 2; // 2 bytes per value 
-    
-    static int howmanyarrays = memory_desired / memory_per_array;
-
     @State(Scope.Benchmark)
     public static class BenchmarkState {
 
@@ -37,12 +31,15 @@ public class ShortBinarySearch {
         short[] queries;
         Blackhole bh = new Blackhole();
         Random rand = new Random();
-
+        int memory_desired, memory_per_array, howmanyarrays;
         public short nextQuery() {
             return (short) rand.nextInt();
         }
 
         public BenchmarkState() {
+            memory_desired = 1024*1024*1024; // 1 GB
+            memory_per_array = N * 2; // 2 bytes per value 
+            howmanyarrays = memory_desired / memory_per_array;
             array = new short[howmanyarrays][N];
             System.out.println("*** Array memory usage is at least " + ( (N * howmanyarrays * 2 ) / ( 1024 * 1024 ) ) + "MB");
 
@@ -216,7 +213,7 @@ public class ShortBinarySearch {
         final int l = s.queries.length;
         int bogus = 0;
         for (int k = 0; k < l; ++k) {
-            for (int z = 0; z < howmanyarrays; ++z) {
+            for (int z = 0; z < s.howmanyarrays; ++z) {
 
                 bogus += hybridUnsignedBinarySearch32(s.array[z],
                         s.queries[k]);
@@ -230,7 +227,7 @@ public class ShortBinarySearch {
         final int l = s.queries.length;
         int bogus = 0;
         for (int k = 0; k < l; ++k) {
-            for (int z = 0; z < howmanyarrays; ++z) {
+            for (int z = 0; z < s.howmanyarrays; ++z) {
 
                 bogus += linear256_16(s.array[z],
                         s.queries[k]);
@@ -244,7 +241,7 @@ public class ShortBinarySearch {
         final int l = s.queries.length;
         int bogus = 0;
         for (int k = 0; k < l; ++k) {
-            for (int z = 0; z < howmanyarrays; ++z) {
+            for (int z = 0; z < s.howmanyarrays; ++z) {
 
                 bogus += branchlessUnsignedBinarySearch(s.array[z],
                         s.queries[k]);
@@ -258,7 +255,7 @@ public class ShortBinarySearch {
         final int l = s.queries.length;
         int bogus = 0;
         for (int k = 0; k < l; ++k) {
-            for (int z = 0; z < howmanyarrays; ++z) {
+            for (int z = 0; z < s.howmanyarrays; ++z) {
                 bogus += unsignedBinarySearch(s.array[z], s.queries[k]);
             }
         }
