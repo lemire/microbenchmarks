@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class ShortBinarySearch {
 
-    @Param({ "128", "2048", "4096" })
+    @Param({ "128", "4096" })
     static int N;
 
 
@@ -95,7 +95,7 @@ public class ShortBinarySearch {
             
         public BenchmarkState() {
             if (array == null) {
-                int memory_desired = 16 * 1024 * 1024; // 16 MB
+                int memory_desired = 64 * 1024 * 1024; // 64 MB
 
                 int memory_per_array = N * 2; // 2 bytes per value
 
@@ -234,16 +234,15 @@ public class ShortBinarySearch {
                 return middleIndex;
         }
         // we finish the job with a sequential search
-        int x = low;
-        for (; x <= high; ++x) {
-            final int val = toIntUnsigned(array[x]);
+        for (; low <= high; ++x) {
+            final int val = toIntUnsigned(array[low]);
             if (val >= ikey) {
                 if (val == ikey)
-                    return x;
+                    return low;
                 break;
             }
         }
-        return -(x + 1);
+        return -(low + 1);
     }
 
     public static int toIntUnsigned(short x) {
