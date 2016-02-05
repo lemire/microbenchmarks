@@ -21,74 +21,143 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class ShortBinarySearch {
 
-    @Param({ "8", "32", "128", "256", "512", "1024", "2048", "4096" })
+    @Param({ "128", "2048", "4096" })
     static int N;
     
-    static int memory_desired = 1024*1024*1024; // 1 GB
     
-    static int memory_per_array = N * 2; // 2 bytes per value 
-    
-    static int howmanyarrays = memory_desired / memory_per_array;
+    static int howmanyarrays;
 
     @State(Scope.Benchmark)
     public static class BenchmarkState {
 
-        short[][] array;
-        short[] queries;
+        static short[][] array;
+        static short[] queries;
         Blackhole bh = new Blackhole();
-        Random rand = new Random();
+        Random rand = new Random(1234);
 
         public short nextQuery() {
             return (short) rand.nextInt();
         }
-
-        public BenchmarkState() {
-            array = new short[howmanyarrays][N];
-            System.out.println("*** Array memory usage is at least " + ( (N * howmanyarrays * 2 ) / ( 1024 * 1024 ) ) + "MB");
-
-            queries = new short[1024];
-            for (int z = 0; z < howmanyarrays; ++z) {
-                final short[] arr = array[z];
-
-                for (int k = 0; k < N; ++k)
-                    arr[k] = (short) rand.nextInt();
-                List<Short> wrapper = new AbstractList<Short>() {
-
-                    @Override
-                    public Short get(int index) {
-                        return arr[index];
+        
+        public void test() {
+            for (int k = 0; k < queries.length; ++k) {
+                for (int z = 0; z < howmanyarrays; ++z) {
+                    short[] arr = array[z];
+                    short q = queries[k];
+                    int answer1 = hybridUnsignedBinarySearch32(arr,q);
+                    int answer2 = linear256_16(arr,q);
+                    int answer3 = branchlessUnsignedBinarySearch(arr,q);
+                    int answer4 = unsignedBinarySearch(arr,q);
+                    boolean iscorrect = true;
+                    if (answer1 > 0) {
+                        if (arr[answer1] != q) {
+                            System.err.println("answer1 is incorrect.");
+                            iscorrect = false;
+                        }
                     }
-
-                    @Override
-                    public Short set(int index, Short element) {
-                        short v = arr[index];
-                        arr[index] = element;
-                        return v;
+                    if (answer2 > 0) {
+                        if (arr[answer2] != q) {
+                            System.err.println("answer2 is incorrect.");
+                            iscorrect = false;
+                        }
                     }
-
-                    @Override
-                    public int size() {
-                        return arr.length;
+                    if (answer3 > 0) {
+                        if (arr[answer3] != q) {
+                            System.err.println("answer3 is incorrect.");
+                            iscorrect = false;
+                        }
                     }
-
-                };
-                Collections.sort(wrapper, new Comparator<Short>() {
-
-                    @Override
-                    public int compare(Short o1, Short o2) {
-                        return (o1.shortValue() & 0xFFFF)
-                                - (o2.shortValue() & 0xFFFF);
+                    if (answer4 > 0) {
+                        if (arr[answer4] != q) {
+                            System.err.println("answer4 is incorrect.");
+                            iscorrect = false;
+                        }
                     }
-                });
-                // check that it is actually sorted!
-                for (int k = 1; k < arr.length; ++k) {
-                    if ((arr[k] & 0xFFFF) < (arr[k - 1] & 0xFFFF))
+                    if (answer4 < 0) {
+
+                        if (answer1 != answer2) {
+                            System.out.println(answer1 + " " + answer2 + " "
+                                    + answer3 + " " + answer4);
+                            iscorrect = false;
+
+                        }
+                        if (answer2 != answer3) {
+                            System.out.println(answer1 + " " + answer2 + " "
+                                    + answer3 + " " + answer4);
+                            iscorrect = false;
+
+                        }
+                        if (answer3 != answer4) {
+                            System.out.println(answer1 + " " + answer2 + " "
+                                    + answer3 + " " + answer4);
+                            iscorrect = false;
+
+                        }
+                    }
+                    if (!iscorrect)
                         throw new RuntimeException("bug");
                 }
             }
-            for (int k = 0; k < queries.length; ++k) {
-                queries[k] = (short) rand.nextInt();
+        }
+
+        public BenchmarkState() {
+            if (array == null) {
+                int memory_desired = 16*1024*1024; // 16 MB
+                
+                int memory_per_array = N * 2; // 2 bytes per value 
+                
+                howmanyarrays = memory_desired / memory_per_array;
+
+                array = new short[howmanyarrays][N];
+                System.out.println("*** Array memory usage is at least "
+                        + ((N * howmanyarrays * 2) / (1024 * 1024)) + "MB");
+
+                queries = new short[1024];
+                for (int z = 0; z < howmanyarrays; ++z) {
+                    final short[] arr = array[z];
+
+                    for (int k = 0; k < N; ++k)
+                        arr[k] = (short) rand.nextInt();
+                    List<Short> wrapper = new AbstractList<Short>() {
+
+                        @Override
+                        public Short get(int index) {
+                            return arr[index];
+                        }
+
+                        @Override
+                        public Short set(int index, Short element) {
+                            short v = arr[index];
+                            arr[index] = element;
+                            return v;
+                        }
+
+                        @Override
+                        public int size() {
+                            return arr.length;
+                        }
+
+                    };
+                    Collections.sort(wrapper, new Comparator<Short>() {
+
+                        @Override
+                        public int compare(Short o1, Short o2) {
+                            return (o1.shortValue() & 0xFFFF)
+                                    - (o2.shortValue() & 0xFFFF);
+                        }
+                    });
+                    // check that it is actually sorted!
+                    for (int k = 1; k < arr.length; ++k) {
+                        if ((arr[k] & 0xFFFF) < (arr[k - 1] & 0xFFFF))
+                            throw new RuntimeException("bug");
+                    }
+                }
+                for (int k = 0; k < queries.length; ++k) {
+                    queries[k] = (short) rand.nextInt();
+                }
             }
+            test();
+            
 
         }
 
@@ -127,7 +196,7 @@ public class ShortBinarySearch {
                 else return - k - 1;
             }
         }
-        return k;
+        return - k - 1;
     }
     
 
