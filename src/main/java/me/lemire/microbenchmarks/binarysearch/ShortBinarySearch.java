@@ -234,7 +234,7 @@ public class ShortBinarySearch {
                 return middleIndex;
         }
         // we finish the job with a sequential search
-        for (; low <= high; ++x) {
+        for (; low <= high; ++low) {
             final int val = toIntUnsigned(array[low]);
             if (val >= ikey) {
                 if (val == ikey)
