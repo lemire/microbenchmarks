@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.SECONDS)
 public class ShortBinarySearch {
 
-    @Param({ "128", "2048", "4096" })
+    @Param({"32", "128", "1024", "4096"})
     static int N;
 
 
@@ -274,8 +274,21 @@ public class ShortBinarySearch {
         int bogus = 0;
         for (int k = 0; k < l; ++k) {
             for (int z = 0; z < s.howmanyarrays; ++z) {
+                bogus += hybridUnsignedBinarySearch32(s.array[z], s.queries[(k+z)%s.queries.length]);
+            }
+        }
+        s.bh.consume(bogus);
+    }
 
-                bogus += hybridUnsignedBinarySearch32(s.array[z], s.queries[k]);
+    
+    
+    @Benchmark
+    public void linear(BenchmarkState s) {
+        final int l = s.queries.length;
+        int bogus = 0;
+        for (int k = 0; k < l; ++k) {
+            for (int z = 0; z < s.howmanyarrays; ++z) {
+                bogus += sequentialUnsignedSearch(s.array[z], s.queries[(k+z)%s.queries.length]);
             }
         }
         s.bh.consume(bogus);
@@ -287,8 +300,7 @@ public class ShortBinarySearch {
         int bogus = 0;
         for (int k = 0; k < l; ++k) {
             for (int z = 0; z < s.howmanyarrays; ++z) {
-
-                bogus += linear256_16(s.array[z], s.queries[k]);
+                bogus += linear256_16(s.array[z], s.queries[(k+z)%s.queries.length]);
             }
         }
         s.bh.consume(bogus);
@@ -302,7 +314,7 @@ public class ShortBinarySearch {
             for (int z = 0; z < s.howmanyarrays; ++z) {
 
                 bogus += branchlessUnsignedBinarySearch(s.array[z],
-                        s.queries[k]);
+                        s.queries[(k+z)%s.queries.length]);
             }
         }
         s.bh.consume(bogus);
@@ -314,7 +326,7 @@ public class ShortBinarySearch {
         int bogus = 0;
         for (int k = 0; k < l; ++k) {
             for (int z = 0; z < s.howmanyarrays; ++z) {
-                bogus += unsignedBinarySearch(s.array[z], s.queries[k]);
+                bogus += unsignedBinarySearch(s.array[z], s.queries[(k+z)%s.queries.length]);
             }
         }
         s.bh.consume(bogus);
@@ -323,7 +335,7 @@ public class ShortBinarySearch {
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(ShortBinarySearch.class.getSimpleName())
-                .warmupIterations(5).measurementIterations(5).forks(1).build();
+                .warmupIterations(2).measurementIterations(2).forks(1).build();
 
         new Runner(opt).run();
     }
