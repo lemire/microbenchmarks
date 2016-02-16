@@ -40,6 +40,11 @@ public class RandomNumberGenerator {
     public int basicJavaRandom(BenchmarkState s) {
         return  s.r.nextInt();
     }
+
+    @Benchmark
+    public int basicJavaRandomRanged1000(BenchmarkState s) {
+        return  s.r.nextInt(1000);
+    }
     
 
     @Benchmark
@@ -52,10 +57,25 @@ public class RandomNumberGenerator {
         return ThreadLocalRandom.current().nextInt();
     }
     
+
+    @Benchmark
+    public int basicThreadLocalRandomRanged1000(BenchmarkState s) {
+        return ThreadLocalRandom.current().nextInt(1000);
+    }
+    
     @Benchmark
     public int pcgJavaRandom(BenchmarkState s) {
         return  s.rnd.nextInt();
     }
+    
+
+    @Benchmark
+    public int pcgJavaRandomRanged1000(BenchmarkState s) {
+        return  s.rnd.nextInt(1000);
+    }
+    
+    
+    
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
         .include(RandomNumberGenerator.class.getSimpleName()).warmupIterations(2)

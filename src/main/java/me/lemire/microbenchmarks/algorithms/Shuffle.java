@@ -1,8 +1,8 @@
 package me.lemire.microbenchmarks.algorithms;
 
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -20,50 +20,13 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 public class Shuffle {
     
-    
-    private static void testfairness(int maxsize, MersenneTwisterFast r) {
-        for(int size = 2; size <maxsize; ++size) {
-            int i;
-            int m2 = 1 << (32- Integer.numberOfLeadingZeros(size-1));
-            double ratio = (double) size / m2;
-            int mask = m2 -1;
-            int count = 20000;
-            double predicted = (1-ratio) * count;
-            int missed = 0;
-            for(i = 0 ; i < count; ++i ) {
-                if((r.nextInt() & mask) >= size) ++missed;
-            }
-            if((double)missed > 1.2 * predicted + 20) {
-                throw new RuntimeException("Bad RNG.");
-            }
-        }
-    }
-    
-    private static void testfairness(int maxsize, Random r) {
-        for(int size = 2; size <maxsize; ++size) {
-            int i;
-            int m2 = 1 << (32- Integer.numberOfLeadingZeros(size-1));
-            double ratio = (double) size / m2;
-            int mask = m2 -1;
-            int count = 20000;
-            double predicted = (1-ratio) * count;
-            int missed = 0;
-            for(i = 0 ; i < count; ++i ) {
-                if((r.nextInt() & mask) >= size) ++missed;
-            }
-            if((double)missed > 1.2 * predicted + 20) {
-                throw new RuntimeException("Bad RNG.");
-            }
-        }
-    }
-    
     private static void swap(int[] arr, int i, int j) {
         int tmp = arr[i];
         arr[i] = arr[j];
         arr[j] = tmp;
     }
 
-    public static void shuffle(int arr[], Random rnd) {
+    public static void shuffle(int arr[], ThreadLocalRandom rnd) {
         int size = arr.length;
         // Shuffle array
         for (int i = size; i > 1; i--)
@@ -78,7 +41,7 @@ public class Shuffle {
             swap(arr, i - 1, rnd.nextInt(i));
     }
     
-    static int ranged_random_mult_lazy(int  range,  MersenneTwisterFast rnd) {
+    static int fancy_ranged_random_mult_lazy(int  range,  MersenneTwisterFast rnd) {
         long random32bit, multiresult;
         long leftover;
         if((range & (range - 1)) == 0)
@@ -98,6 +61,24 @@ public class Shuffle {
         return (int) (multiresult >>> 32); // [0, range)
     }
     
+    static int ranged_random_mult_lazy(int  range,  MersenneTwisterFast rnd) {
+        long random32bit, multiresult;
+        long leftover;
+        final long mask = 0xFFFFFFFFL;
+        random32bit = rnd.nextInt()  & mask;
+        multiresult = random32bit * range;
+        leftover = multiresult & mask;
+        if(leftover < range) {
+          final long threshold = (-range) % range;
+          while (leftover <= threshold) {
+              random32bit = rnd.nextInt() & mask;
+              multiresult = random32bit * range;
+              leftover =  multiresult & mask;
+          } 
+        }
+        return (int) (multiresult >>> 32); // [0, range)
+    }
+    
     public static void shuffle_fastF(int arr[], MersenneTwisterFast rnd) {
         int size = arr.length;
 
@@ -105,7 +86,7 @@ public class Shuffle {
         for (int i = size; i > 1; i--)
             swap(arr, i - 1, ranged_random_mult_lazy(i,rnd));
     }
-    static int ranged_random_mult_lazy(int  range,  Random rnd) {
+    static int fancy_ranged_random_mult_lazy(int  range,  ThreadLocalRandom rnd) {
         long random32bit, multiresult;
         long leftover;
         if((range & (range - 1)) == 0)
@@ -125,7 +106,25 @@ public class Shuffle {
         return (int) (multiresult >>> 32); // [0, range)
     }
     
-    public static void shuffle_fastF(int arr[], Random rnd) {
+    static int ranged_random_mult_lazy(int  range,  ThreadLocalRandom rnd) {
+        long random32bit, multiresult;
+        long leftover;
+        final long mask = 0xFFFFFFFFL;
+        random32bit = rnd.nextInt() & mask;
+        multiresult = random32bit * range;
+        leftover = multiresult & mask;
+        if(leftover < range) {
+          final long threshold = (-range) % range;
+          while (leftover <= threshold) {
+              random32bit = rnd.nextInt()  & mask;
+              multiresult = random32bit * range;
+              leftover =  multiresult & mask;
+          } 
+        }
+        return (int) (multiresult >>> 32); // [0, range)
+    }
+    
+    public static void shuffle_fastF(int arr[], ThreadLocalRandom rnd) {
         int size = arr.length;
 
         // Shuffle array
@@ -140,8 +139,6 @@ public class Shuffle {
         int[] array = new int[N];
 
         public BenchmarkState() {
-            testfairness(1000, rr);
-            testfairness(1000, r);
 
             for (int k = 0; k < N; ++k)
                 array[k] = k;
@@ -149,7 +146,7 @@ public class Shuffle {
 
     }
     static MersenneTwisterFast rr = new MersenneTwisterFast();
-    static Random r = new Random();
+    static ThreadLocalRandom r = ThreadLocalRandom.current();
     
 
     @Benchmark
