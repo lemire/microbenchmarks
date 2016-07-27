@@ -16,14 +16,18 @@ public class Division {
     
     @State(Scope.Benchmark)
     public static class BenchmarkState {
-        float precomputeddivisor = 1 / (float) (1<<14);
+        final float divisor = (float) (1<<14);
+        final float precomputeddivisor = 1 / divisor;
+        final float divisor3 = (float) (3);
+        final float precomputeddivisor3 = 1 / divisor3;
+         int length = 10;
     }
     
 
     @Benchmark
     public float precompDivision(BenchmarkState s) {
     	float sum = 0;
-    	for(int k = 0; k < 10; ++k)
+    	for(int k = 0; k < s.length; ++k)
     		sum += s.precomputeddivisor * k;
     	return sum;
     }
@@ -31,19 +35,28 @@ public class Division {
     @Benchmark
     public float division(BenchmarkState s) {
     	float sum = 0;
-    	for(int k = 0; k < 10; ++k)
-    		sum +=  k / (float) (1<<14);
+    	for(int k = 0; k < s.length; ++k)
+    		sum +=  k / s.divisor;
     	return sum;
     }
 
     @Benchmark
     public float divisionBy3(BenchmarkState s) {
     	float sum = 0;
-    	for(int k = 0; k < 10; ++k)
+    	for(int k = 0; k < s.length; ++k)
     		sum +=  k / (float) (3);
     	return sum;
     }
+   
+    @Benchmark
+    public float divisionBy3ThroughMultiplication(BenchmarkState s) {
+    	float sum = 0;
+    	for(int k = 0; k < s.length; ++k)
+    		sum +=  k * s.precomputeddivisor3;
+    	return sum;
+    }
     
+ 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(Division.class.getSimpleName())
