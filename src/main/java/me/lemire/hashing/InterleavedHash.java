@@ -19,7 +19,7 @@ import java.util.*;
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 public class InterleavedHash {
-    
+
     @Benchmark
     public int standardHash(BenchmarkState s) {
         char[] val = s.array;
@@ -32,7 +32,7 @@ public class InterleavedHash {
 
     }
 
-    
+
     @Benchmark
     public int hashCode(BenchmarkState s) {
         return Arrays.hashCode(s.array);
@@ -94,7 +94,7 @@ public class InterleavedHash {
 
     }
 
-    
+
     @Benchmark
     public int hashCodeByte(BenchmarkState s) {
         return Arrays.hashCode(s.barray);
@@ -157,7 +157,7 @@ public class InterleavedHash {
 
     }
 
-    
+
     @Benchmark
     public int standardHashByteBuffer4(BenchmarkState s) {
         ByteBuffer val = s.bb;
@@ -169,7 +169,7 @@ public class InterleavedHash {
             byte b2 = val.get(i+1);
             byte b3 = val.get(i+2);
             byte b4 = val.get(i+3);
-            
+
             h = 31 * 31 * 31 * 31 * h + 31 * 31 * 31 * b1 + 31 * 31
                     * b2 + 31 * b3 + b4;
         }
@@ -220,7 +220,7 @@ public class InterleavedHash {
         return h;
 
     }
- 
+
     @State(Scope.Benchmark)
     public static class BenchmarkState {
 
@@ -249,4 +249,3 @@ public class InterleavedHash {
         new Runner(opt).run();
     }
 }
-
