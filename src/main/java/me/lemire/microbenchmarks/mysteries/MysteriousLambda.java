@@ -34,6 +34,7 @@ public class MysteriousLambda {
 
 	}
 
+	
 	@Benchmark
 	public FooPrime[] basicstream(BenchmarkState s) {
 		return (FooPrime[]) s.fooList.stream().map(it -> {
@@ -49,11 +50,28 @@ public class MysteriousLambda {
 		}).toArray(FooPrime[]::new);
 	}
 
-    
+   	@Benchmark
+	public FooPrime[] nullbasicstream(BenchmarkState s) {
+		return (FooPrime[]) s.fooList.stream().map(it -> {
+			if( it.getAlpha() == null) throw new NullPointerException();
+			return new FooPrime().gamma(it.getAlpha() + it.getBeta());
+		}).toArray(FooPrime[]::new);
+	}
+
+
+   	@Benchmark
+	public FooPrime[] betanullbasicstream(BenchmarkState s) {
+		return (FooPrime[]) s.fooList.stream().map(it -> {
+			if( it.getBeta() == null) throw new NullPointerException();
+			return new FooPrime().gamma(it.getAlpha() + it.getBeta());
+		}).toArray(FooPrime[]::new);
+	}
+
+ 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-        .include(MysteriousLambda.class.getSimpleName()).warmupIterations(2)
-        .measurementIterations(3).forks(1).build();
+        .include(MysteriousLambda.class.getSimpleName()).warmupIterations(5)
+        .measurementIterations(5).forks(1).build();
 
         new Runner(opt).run();
     }
