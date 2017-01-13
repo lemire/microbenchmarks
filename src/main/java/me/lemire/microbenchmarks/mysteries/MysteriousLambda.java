@@ -60,7 +60,7 @@ public class MysteriousLambda {
 
 }
 
-class Foo {
+final class Foo {
 	private String alpha;
 	private String beta;
 
@@ -91,7 +91,7 @@ class Foo {
 	}
 }
 
-class FooPrime {
+final class FooPrime {
 	private String gamma;
 
 	public String getGamma() {
