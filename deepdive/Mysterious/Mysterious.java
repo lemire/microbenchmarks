@@ -86,11 +86,11 @@ public class Mysterious {
 
  
     public static void main(String[] args)  {
-        for (int k = 0; k < 100; k++) {
+        for (int k = 0; k < 10000; k++) {
           BenchmarkState bs = new BenchmarkState();
           Mysterious ml = new Mysterious();
-          System.out.println(ml.nullbasicstream(bs));   
-          System.out.println(ml.basicstream(bs));   
+          ml.nullbasicstream(bs);   
+          //System.out.println(ml.basicstream(bs));   
         }     
     }
 
