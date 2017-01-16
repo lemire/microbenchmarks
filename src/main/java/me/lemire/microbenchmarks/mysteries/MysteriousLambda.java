@@ -1,8 +1,6 @@
 package me.lemire.microbenchmarks.mysteries;
 
 import java.util.ArrayList;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import org.openjdk.jmh.annotations.Benchmark;
@@ -83,6 +81,41 @@ public class MysteriousLambda {
 
 
 
+	@Benchmark
+	public FooPrime[] basicsum(BenchmarkState s) {
+		int howmany = s.fooList.size();
+		FooPrime[] answer = new FooPrime[s.fooList.size()];
+		for(int k = 0; k < howmany ; ++k ) {
+			Foo x = s.fooList.get(k);
+			answer[k] = new FooPrime(x.getAlpha() + x.getBeta());
+		}
+		return answer;
+	}
+
+	
+	@Benchmark
+	public String[] basicsum_tostring(BenchmarkState s) {
+		int howmany = s.fooList.size();
+		String[] answer = new String[s.fooList.size()];
+		for(int k = 0; k < howmany ; ++k ) {
+			Foo x = s.fooList.get(k);
+			answer[k] = x.getAlpha() + x.getBeta();
+		}
+		return answer;
+	}
+
+	@Benchmark
+	public String[] basicsumnull_tostring(BenchmarkState s) {
+		int howmany = s.fooList.size();
+		String[] answer = new String[s.fooList.size()];
+		for(int k = 0; k < howmany ; ++k ) {
+			Foo x = s.fooList.get(k);
+			if(x.getAlpha() == null) throw new NullPointerException();
+			answer[k] = x.getAlpha() + x.getBeta();
+		}
+		return answer;
+	}
+
 
 
 	@Benchmark
@@ -92,7 +125,24 @@ public class MysteriousLambda {
 			return new FooPrime().gamma(it.getAlpha() + it.getBeta());
 		}).toArray(FooPrime[]::new);
 	}
+	
+	@Benchmark
+	public String[] basicstream_tostring(BenchmarkState s) {
+		return (String[]) s.fooList.stream().map(it -> {
+			return it.getAlpha() + it.getBeta();
+		}).toArray(String[]::new);
+	}
+	
+	
+	@Benchmark
+	public String[] tweakedbasicstream_tostring(BenchmarkState s) {
+		return (String[]) s.fooList.stream().map(it -> {
+			int stuff = it.getAlpha().length();
+			return it.getAlpha() + it.getBeta();
+		}).toArray(String[]::new);
+	}
 
+	
 	@Benchmark
 	public FooPrime[] nullbasicstream(BenchmarkState s) {
 		return (FooPrime[]) s.fooList.stream().map(it -> {
@@ -155,6 +205,13 @@ final class Foo {
 
 final class FooPrime {
 	private String gamma;
+	
+	public FooPrime() {
+	}
+
+	public FooPrime(String x) {
+		gamma = x;
+	}
 
 	public String getGamma() {
 		return gamma;
