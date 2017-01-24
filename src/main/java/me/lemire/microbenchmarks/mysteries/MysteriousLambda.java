@@ -91,6 +91,18 @@ public class MysteriousLambda {
 		}
 		return answer;
 	}
+	@Benchmark
+	public FooPrime[] basicsumnull(BenchmarkState s) {
+		int howmany = s.fooList.size();
+		FooPrime[] answer = new FooPrime[s.fooList.size()];
+		for(int k = 0; k < howmany ; ++k ) {
+			Foo x = s.fooList.get(k);
+                        if(x.getAlpha() == null) throw new NullPointerException();
+			answer[k] = new FooPrime(x.getAlpha() + x.getBeta());
+		}
+		return answer;
+	}
+
 
 	
 	@Benchmark
