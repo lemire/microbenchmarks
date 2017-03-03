@@ -1,5 +1,16 @@
 microbenchmarks
 ===============
+
+ Range Minimum Query
+--------------------
+
+http://stackoverflow.com/questions/42570135/java-method-call-performance
+
+        mvn clean install
+        java -cp target/microbenchmarks-0.0.1-jar-with-dependencies.jar me.lemire.microbenchmarks.rangequery.RangeMinimum
+
+
+
 Mysterious issue
 -------------------
 
