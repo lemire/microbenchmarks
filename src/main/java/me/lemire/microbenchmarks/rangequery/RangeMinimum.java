@@ -56,7 +56,7 @@ public class RangeMinimum {
     public int fncmin() {
         int sum = 0;
         for (int i = 0; i < t; i++) {
-            sum += rangemin(b,m[i], M[i]);
+            sum += RangeMinimum.rangemin(b,m[i], M[i]);
         }
         return sum;
     }
