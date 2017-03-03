@@ -15,7 +15,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 public class RangeMinimum {
-    final static int N = 1000000;
+    final static int N = 10000;
     final static int t = 100;
     static int[] b = new int[N];
     static int[] m = new int[t];
