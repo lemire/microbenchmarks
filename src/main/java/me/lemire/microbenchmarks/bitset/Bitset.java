@@ -12,7 +12,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 @State(Scope.Thread)
 @BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.SECONDS)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
 public class Bitset {
     static BitSet b = new BitSet();
 
